@@ -10,13 +10,13 @@ v2 = .15:.05:.5;
 ptmatrix = [X(:),Y(:)];
 tpoints = CustomStartPointSet(ptmatrix);
 % Previous Uncomment to use lsqnonlin and fmincon
-options = optimoptions(@fmincon,'Algorithm','interior-point'); % optimoptions(@fmincon,'Algorithm','interior-point');
+options = optimoptions(@fmincon,'Algorithm','trust-region-reflective'); % optimoptions(@fmincon,'Algorithm','interior-point');
 options.PlotFcns = 'optimplotresnorm'; %  'optimplotfirstorderopt'
 options.UseParallel = false;
 % options.StepTolerance = .001;
 % options.FiniteDifferenceStepSize = [6,.0025];
 %% Problem definition
-problem = createOptimProblem('fmincon','x0',x0,'objective',@myscript,...
+problem = createOptimProblem('lsqnonlin','x0',x0,'objective',@myscript,...
     'lb',lb,'ub',ub,'options',options);
 % [x,ref] = lsqnonlin(problem);
 % [Xnew,ref] = lsqnonlin(@myscript,x0,lb,ub,options);
