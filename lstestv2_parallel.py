@@ -4,21 +4,21 @@ from scipy.io import savemat
 import numpy as np
 import subprocess,os,sys,shutil
 import time
+import write2InpFile
+import ParamTools as par
 ## https://docs.scipy.org/doc/scipy/tutorial/optimize.html#global-optimization
 ## File paths and variables
-# basePath = r'C:\Users\mnsaz\Desktop\ScipyTests'
 basePath = os.getcwd()
 os.chdir(basePath)
-orifile = os.path.join(basePath,"testPinch3.inp")
+## User Input
+inpName = "TestJob-2.inp"
+# criteriaMod = "*Elastic\n"# "*Elastic, type=ENGINEERING CONSTANTS\n"
+## Dependancies
+orifile = os.path.join(basePath,inpName)
 dataRet = os.path.join(basePath,"dataRetrieval.py")
 runDir = os.path.join(basePath,"runDir")
 MatlabOutput = os.path.join(basePath,"MatlabOutput")
 command = 'abaqus python "%s"'%dataRet
-# outputName = os.path.join(basePath,"Outcomes\\feaResults.ascii")
-displayScreen = os.path.join(basePath,"Outcomes\\display.ascii")
-# expData = np.array([1.07601,0.8989,0.88240,4.10911,4.15046]) ## These are our experimental data -> displacement controlled.
-#expData = np.array([0.611925065517,0.631498813629,0.591993808746,0.488072931767,0.738442957401]) ## These are our experimental data -> force controlled.
-
 ## Remove runDir files
 def removefiles(mode,path=None):
     os.chdir(path)
@@ -43,51 +43,53 @@ def fileReader(filePath,cpPath=None):
     return lines
 
 ### Display
-def display(disp_file,fileN=None):
-    with open(disp_file,"a") as file:
-        for ind,item in enumerate(fileN):
+def display(data):
+    outputName2 = os.path.join(basePath,"debugReport.ascii")
+    with open(outputName2,"a") as file:
+        for ind,item in enumerate(data):
             cm = str(ind) + " %s\n"%item
             file.writelines(cm)
 
-def Abqfunc(x,orifile,workspacePath):
 ## Function call
+def Abqfunc(x,orifile,workspacePath):
     ## Method required to modify Youngs and Poisson
     os.chdir(basePath)
-    lines = fileReader(orifile)
-    for ind,line in enumerate(lines):
-        if line =="*Elastic\n":
-            lines[ind+1] = '%s, %s\n'%(x[0],x[1])
-    if not os.path.exists(workspacePath):
-        os.makedirs(workspacePath)
-    workspace = os.path.join(workspacePath,"testPinch3.inp")
-    # odbFile = os.path.join(workspacePath,"testPinch2.odb")
-    with open(workspace,"w+") as file:
-        file.writelines(lines)
-    cmd = 'abaqus job=genOdb input="%s" cpus=4'%workspace
+    ## Code to write new .inp file
+    workspaceInp = write2InpFile.writeInp(x,orifile,workspacePath,inpName)
+    cmd = 'abaqus job=genOdb input="%s" cpus=4'%workspaceInp
     os.chdir(workspacePath)
-    pCall = subprocess.call(cmd, shell=True)
-    time.sleep(15)
-    removefiles(0,workspacePath)
-    ## PostProcessing
-    if pCall==0:
-        # cmd = 'abaqus python %s'%(command)
-        os.chdir(basePath)
-        commandn = r'%s -- "%s"'%(command,workspacePath)
-        pCall2 = subprocess.call(commandn, shell=True)
-        if pCall2==0:
-            outputName = os.path.join(workspacePath,"feaResults.ascii")
-            dat= np.genfromtxt(outputName, delimiter=",")
-            mdic = {"dat": dat, "label": "experiment"}
-            output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
-            savemat(output, mdic)
-            return None
+    if par.material_stability(x):
+        pCall = subprocess.call(cmd,shell=True)
+        time.sleep(780)
+        removefiles(0,workspacePath)
+        ## PostProcessing
+        if pCall==0:
+            os.chdir(basePath)
+            commandn = r'%s -- "%s"'%(command,workspacePath)
+            pCall2 = subprocess.call(commandn, shell=True)
+            if pCall2==0:
+                outputName = os.path.join(workspacePath,"feaResults.ascii")
+                dat= np.genfromtxt(outputName, delimiter=",")
+                mdic = {"dat": dat, "label": "experiment"}
+                output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
+                savemat(output, mdic)
+                return None
+    else:
+        dat = np.zeros([4,12])
+        mdic = {"dat": dat, "label": "experiment"}
+        output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
+        savemat(output, mdic)        
 
 ## Run script
-# inp1 = 100;inp2 = .3;inp3 = 1  # this is required to test the file without matlab
+# inp = np.array([20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583])
+# inp3 = 1  # this is required to test the file without matlab
 # workspacePath = runDir + "\workspace_%s"%(inp3)#inp3
-# x0 = np.array([inp1,inp2])
+# x0 = inp
 ## Matlab version
-x0 =np.array([sys.argv[-3],sys.argv[-2]]) #
+dictn =[]
+for i in range(1,len(sys.argv)-1):
+    dictn.append(sys.argv[i])
+x0 =np.hstack([dictn])
 workspacePath = runDir + "\workspace_%s"%(sys.argv[-1])#inp3
 data = Abqfunc(x0,orifile,workspacePath)
 # try:

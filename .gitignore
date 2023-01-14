@@ -8,3 +8,6 @@
 ./vscode
 _pycache_/
 ScipyTests.code-workspace
+## Python generated files Files
+myscript.asv
+runFile.asv

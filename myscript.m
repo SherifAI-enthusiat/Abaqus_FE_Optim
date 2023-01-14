@@ -1,9 +1,9 @@
 function [outputn] = myscript(x)
 %     This is a counter to create individual folders for results and
 %     extract by Par-pool
-expData = [0.000170404,0.000214054,0.000104937,0.000318547,0.000571305;
-    0.611925065517,0.631498813629,0.591993808746,0.488072931767,0.738442957401];
+    load('MatlabOutput\\expData.mat');
     count =1; key = true;
+    scalarM = 100.*ones(size(expData));
     while key==true
         cmd1 = sprintf('runDir\\workspace_%d',count);
         if exist(cmd1)==7
@@ -12,18 +12,14 @@ expData = [0.000170404,0.000214054,0.000104937,0.000318547,0.000571305;
             cmd1 = sprintf('MatlabOutput\\output_%d.mat',count);
             key = false;
         end
-     end
-    A = 100; B = 100;
-    scalarM = [A,A,A,B,B];
-    formatSpec = 'lstestv2_parallel.py %d %d %d'; %% This is where I can change bits.
-    cmd = sprintf(formatSpec,x(1),x(2),count);
-    pyrunfile(cmd); % pyrunfile(cmd,"data");
-%     cmd1 = sprintf('MatlabOutput\\output_%d.mat',count);
+    end
+%% Call to python and results
+    formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d %d'; %% This is where I can change bits.
+    cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),count);
+    pyrunfile(cmd);
     tmp = load(cmd1, 'dat');
-% Call to error function
-    outputn = errorfunc(tmp.dat,expData,scalarM);
-%     outputn = errorfunc.SumSquarVector(tmp.dat,expData,scalarM,dir);
-%     if exist(cmd1)==2
-%         delete(cmd1);
-%     end
+    outputn = errorfunc(tmp.dat,expData,scalarM,1);
+        %     if exist(cmd1)==2
+        %         delete(cmd1);
+        %     end
 end

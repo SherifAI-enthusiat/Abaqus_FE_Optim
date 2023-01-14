@@ -20,12 +20,12 @@ import tools.extractors as ext
 # import OdbTool_1_ver1 as AnOdb_tool
 myOdb = odbTools.openOdb(odbFile)
 dictn1=[]
-for i in range(1,len(myOdb.steps)+1):
-    stepName = "Load%s"%(i)
-    MenExt = ext.getU_Magnitude(myOdb,"CALIBRATIONNODES",stepName)
-    dictn1.append([MenExt[-1]])
+for ind,stpName in enumerate(myOdb.steps.keys()):
+    if stpName.startswith('Load'):
+        MenExt = ext.getU_Magnitude(myOdb,"CALIBRATIONNODES",stpName)
+        dictn1.append([MenExt[-1]])
 # display(dictn1)
-with open(outputFile,'a') as datFile_1, open(genFile,'a') as datFile_2:
+with open(outputFile,'a') as datFile_1, open(genFile,'w') as datFile_2:
     tempN1= np.vstack(dictn1); #tempN2= np.vstack(dictn2)
     np.savetxt(datFile_1,tempN1,delimiter=',',fmt='%s')
     np.savetxt(datFile_2,tempN1,delimiter=',',fmt='%s')
