@@ -1,6 +1,6 @@
-/MatlabOutput
-/runDir
-/feaAll
+/MatlabOutput/Figures
+/MatlabOutput/output_*.mat
+/runDir/workspace_*
 /Other/testJob.cae
 /Other/testJob.jnl
 /Other/testPinch2.inp
@@ -11,3 +11,6 @@ ScipyTests.code-workspace
 ## Python generated files Files
 myscript.asv
 runFile.asv
+feaAll.ascii
+*.pyc
+*.pyo
