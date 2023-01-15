@@ -90,7 +90,8 @@ dictn =[]
 for i in range(1,len(sys.argv)-1):
     dictn.append(sys.argv[i])
 x0 =np.hstack([dictn])
-workspacePath = runDir + "\workspace_%s"%(sys.argv[-1])#inp3
+# workspacePath = runDir + "\workspace_%s"%(sys.argv[-1])#inp3
+workspacePath = os.path.join(runDir,"workspace_%s"%(sys.argv[-1]))#inp3
 data = Abqfunc(x0,orifile,workspacePath)
 # try:
 #     shutil.rmtree(workspacePath)
