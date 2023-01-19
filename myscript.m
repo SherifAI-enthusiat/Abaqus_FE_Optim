@@ -3,7 +3,7 @@ function [outputn] = myscript(x)
 %     extract by Par-pool
     count =1; key = true;
     while key==true
-        ff = fullfile('MatlabOutput',{'expData.mat';sprintf('output_%d',count)});
+        ff = fullfile(pwd,'MatlabOutput',{'expData.mat';sprintf('output_%d',count)});
         cmd1 = fullfile('runDir', sprintf('workspace_%d',count));
         if exist(cmd1)==7
             count = count + 1;

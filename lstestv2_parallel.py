@@ -4,11 +4,13 @@ from scipy.io import savemat
 import numpy as np
 import subprocess,os,sys,shutil
 import time
+import pathlib2 as pth
 import write2InpFile
 import ParamTools as par
 ## https://docs.scipy.org/doc/scipy/tutorial/optimize.html#global-optimization
 ## File paths and variables
-basePath = os.getcwd()
+basePath= pth.PurePath()
+# basePath = os.getcwd()
 os.chdir(basePath)
 ## User Input
 inpName = "TestJob-2.inp"
@@ -56,7 +58,10 @@ def Abqfunc(x,orifile,workspacePath):
     os.chdir(basePath)
     ## Code to write new .inp file
     workspaceInp = write2InpFile.writeInp(x,orifile,workspacePath,inpName)
-    cmd = 'abaqus job=genOdb input="%s" cpus=4'%workspaceInp
+    try:
+        cmd = r'abaqus job=genOdb input="%s" cpus=4'%workspaceInp
+    except:
+        pass
     os.chdir(workspacePath)
     if par.material_stability(x):
         pCall = subprocess.call(cmd,shell=True)
@@ -81,16 +86,16 @@ def Abqfunc(x,orifile,workspacePath):
         savemat(output, mdic)        
 
 ## Run script
-# inp = np.array([20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583])
+# x0 = np.array([20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583]) # 20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583
 # inp3 = 1  # this is required to test the file without matlab
-# workspacePath = runDir + "\workspace_%s"%(inp3)#inp3
-# x0 = inp
+# workspacePath = os.path.join(runDir,"workspace_%s"%(inp3))#inp3
+
 ## Matlab version
 dictn =[]
 for i in range(1,len(sys.argv)-1):
     dictn.append(sys.argv[i])
 x0 =np.hstack([dictn])
-# workspacePath = runDir + "\workspace_%s"%(sys.argv[-1])#inp3
+workspacePath = runDir + "\workspace_%s"%(sys.argv[-1])#inp3
 workspacePath = os.path.join(runDir,"workspace_%s"%(sys.argv[-1]))#inp3
 data = Abqfunc(x0,orifile,workspacePath)
 # try:

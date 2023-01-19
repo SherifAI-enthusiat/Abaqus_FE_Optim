@@ -24,4 +24,4 @@ problem = createOptimProblem('lsqnonlin','x0',x0,'objective',@myscript,...
 % ms = MultiStart('PlotFcns',@gsplotbestf); % Multi-Start
 ms = MultiStart;
 ms.UseParallel = true;
-[Xnew,fval,exitflag,output,solutions]= run(ms,problem,20);
+[Xnew,fval,exitflag,output,solutions]= run(ms,problem,100);
