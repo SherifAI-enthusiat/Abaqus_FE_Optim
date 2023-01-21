@@ -9,8 +9,7 @@ import write2InpFile
 import ParamTools as par
 ## https://docs.scipy.org/doc/scipy/tutorial/optimize.html#global-optimization
 ## File paths and variables
-basePath= pth.PurePath()
-# basePath = os.getcwd()
+basePath =os.getcwd()
 os.chdir(basePath)
 ## User Input
 inpName = "TestJob-2.inp"

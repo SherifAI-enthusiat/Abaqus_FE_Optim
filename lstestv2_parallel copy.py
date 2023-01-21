@@ -66,7 +66,7 @@ def Abqfunc(x,orifile,workspacePath):
     cmd = 'abaqus job=genOdb input="%s" cpus=4'%workspace
     os.chdir(workspacePath)
     pCall = subprocess.call(cmd, shell=True)
-    time.sleep(15)
+    time.sleep(75)
     removefiles(0,workspacePath)
     ## PostProcessing
     if pCall==0:
