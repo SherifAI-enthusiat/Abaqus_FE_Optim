@@ -50,6 +50,16 @@ def display(data):
         for ind,item in enumerate(data):
             cm = str(ind) + " %s\n"%item
             file.writelines(cm)
+def communicate():
+    ## Build working directory path and variable for matlab
+    key =True; count=0
+    while key:
+        count=+1
+        workspacePath = os.path.join(runDir,"workspace_%s"%(count))#inp3
+        if not os.path.isdir(workspacePath):
+            os.mkdir(workspacePath)
+            key=False
+    return workspacePath,count
 
 ## Function call
 def Abqfunc(x,orifile,workspacePath):
@@ -91,11 +101,11 @@ def Abqfunc(x,orifile,workspacePath):
 
 ## Matlab version
 dictn =[]
-for i in range(1,len(sys.argv)-1):
+for i in range(1,len(sys.argv)):
     dictn.append(sys.argv[i])
 x0 =np.hstack([dictn])
-workspacePath = runDir + "\workspace_%s"%(sys.argv[-1])#inp3
-workspacePath = os.path.join(runDir,"workspace_%s"%(sys.argv[-1]))#inp3
+
+workspacePath,Mcount=communicate()
 data = Abqfunc(x0,orifile,workspacePath)
 # try:
 #     shutil.rmtree(workspacePath)

@@ -15,8 +15,6 @@ ub =[20,20,100,.5,.5,.5,30,30,30];
 options = optimoptions(@lsqnonlin,'Algorithm','trust-region-reflective'); % optimoptions(@fmincon,'Algorithm','interior-point');
 options.PlotFcns = 'optimplotresnorm'; %  'optimplotfirstorderopt'
 options.UseParallel = false;
-% options.StepTolerance = .001;
-% options.FiniteDifferenceStepSize = [6,.0025];
 %% Problem definition
 problem = createOptimProblem('lsqnonlin','x0',x0,'objective',@myscript,...
     'lb',lb,'ub',ub,'options',options);
