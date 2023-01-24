@@ -1,5 +1,5 @@
 from itertools import product
-import sys
+import sys,os
 sys.path.append("/nobackup/mnsaz/Mengoni_tool/Test")
 import numpy as np
 import ParamTools as par
@@ -31,7 +31,7 @@ def filter(X):
                 file.writelines(str2write)
     return
 # Param generator and 
-filename = "/nobackup/mnsaz/Mengoni_tool/param_values.csv"
+filename = os.path.join(os.getcwd,"param_values.csv")
 # filename1 = "/nobackup/mnsaz/Mengoni_tool/counter.txt"
 iterm = par.ParamGenerator(problem,newndiv)
 
