@@ -54,7 +54,7 @@ def communicate():
     ## Build working directory path and variable for matlab
     key =True; count=0
     while key:
-        count=+1
+        count+=1
         workspacePath = os.path.join(runDir,"workspace_%s"%(count))#inp3
         if not os.path.isdir(workspacePath):
             os.mkdir(workspacePath)

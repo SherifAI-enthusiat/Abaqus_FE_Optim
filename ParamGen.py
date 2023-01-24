@@ -10,16 +10,16 @@ problem = {
     'names': ['E1', 'E2', 'E3', 'v12','v13', 'v23', 'G12','G13', 'G23'],
     'bounds': [[0.01, 20],
                [0.01, 20],
-               [1, 100],
-               [0.01, 0.08],
-               [0.01, 0.8],
-               [0.01, 0.8],
-               [1, 10],
+               [1, 250],
+               [0.01, 0.5],
+               [0.01, 0.5],
+               [0.01, 0.5],
+               [1, 20],
                [1, 30],
                [1, 30]]}
 # Generating the number of division in bounds
 # ndiv = 16 # This is the number of divisions I want to have
-newndiv = [10,10,30,5,5,5,6,15,15] 
+newndiv = [4,4,25,5,5,5,6,6,6] 
 
 # Filter using transverse Isotropic and Material stability 
 def filter(X):
@@ -31,7 +31,7 @@ def filter(X):
                 file.writelines(str2write)
     return
 # Param generator and 
-filename = "/nobackup/mnsaz/Mengoni_tool/param_values.ascii"
+filename = "/nobackup/mnsaz/Mengoni_tool/param_values.csv"
 # filename1 = "/nobackup/mnsaz/Mengoni_tool/counter.txt"
 iterm = par.ParamGenerator(problem,newndiv)
 
