@@ -22,16 +22,20 @@ problem = {
 newndiv = [4,4,25,5,5,5,6,6,6] 
 
 # Filter using transverse Isotropic and Material stability 
-def filter(X):
-    if par.transverseIso(X) ==1:
+def filter(X,keyword):
+    if keyword == "trans" and par.transverseIso(X) ==1:
     ## I will use this to check for material stability
         if par.material_stability(X) == 1:
             str2write = "%s \n"%list(X)
             with open(filename,"a") as file:
                 file.writelines(str2write)
+    elif keyword =="ortho" and par.material_stability(X)==1:
+        str2write = "%s \n"%list(X)
+        with open(filename,"a") as file:
+            file.writelines(str2write)
     return
 # Param generator and 
-filename = os.path.join(os.getcwd,"param_values.csv")
+filename = os.path.join(os.getcwd(),"param_values.csv")
 # filename1 = "/nobackup/mnsaz/Mengoni_tool/counter.txt"
 iterm = par.ParamGenerator(problem,newndiv)
 
