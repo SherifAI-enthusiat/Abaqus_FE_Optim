@@ -4,6 +4,8 @@ x0 =[20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583]; % [20,20,100,0.3,0.2,0.2,4.7115
 lb =[.01,.01,1,.01,.01,.01,1,1,1];
 ub =[20,20,250,.01,.01,.01,20,30,30];
 % % % Custom points ---> Latin Hypercube alternatives grid sampling
+ptmatrix= myhypercsample(50,"trans"); % Number of samples is more releveant here.
+tpoints = CustomStartPointSet(ptmatrix);
 % x0 =[210,.3];  % the ans is 250,.3 I believe.
 % lb =[100,.15]; ub = [300,.5];
 % v1 = 100:10:300;
@@ -25,4 +27,4 @@ problem = createOptimProblem('lsqnonlin','x0',x0,'objective',@myscript,...
 ms = MultiStart;
 ms.UseParallel = true;
 % pool = parpool('IdleTimeout',2880); % Trying to address error "IdleTimeout has been reached."
-[Xnew,fval,exitflag,output,solutions]= run(ms,problem,100);
+[Xnew,fval,exitflag,output,solutions]= run(ms,problem,tpoints);

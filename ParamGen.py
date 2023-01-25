@@ -41,4 +41,4 @@ iterm = par.ParamGenerator(problem,newndiv)
 
 #
 for ind,X in enumerate(par.iter_tools(*iterm)):
-	filter(X)
+	filter(X,"ortho")
