@@ -3,7 +3,7 @@
 from scipy.io import savemat
 import numpy as np
 import subprocess,os,sys,shutil
-import time
+import time, psutil
 import pathlib2 as pth
 import write2InpFile
 import ParamTools as par
@@ -31,6 +31,13 @@ def removefiles(mode,path=None):
         for file in files:
             if file.endswith(".lck"):
                 os.remove(file)
+def no_memory():
+    virtual_memory = psutil.virtual_memory()
+    available_memory = virtual_memory.available
+    if available_memory/1000000 < 8800:
+        val = True
+    else:val = False
+    return val
 
 ### File read
 def fileReader(filePath,cpPath=None):
@@ -43,6 +50,24 @@ def fileReader(filePath,cpPath=None):
             newmsgfile.writelines(line)
     return lines
 
+## Check solution has finished
+def isCompleted(staFile,tConst):
+    try:
+        if fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+            val = True
+        elif tConst==5:
+            val = True
+        else: val=False
+    except:
+        val = False
+    return val
+
+### Write to .mat file
+def write2matlab(dat,workspacePath):
+    mdic = {"dat": dat, "label": "experiment"}
+    output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
+    savemat(output, mdic)  
+    return 
 ### Display
 def display(data):
     outputName2 = os.path.join(basePath,"debugReport.ascii")
@@ -67,14 +92,17 @@ def Abqfunc(x,orifile,workspacePath):
     os.chdir(basePath)
     ## Code to write new .inp file
     workspaceInp = write2InpFile.writeInp(x,orifile,workspacePath,inpName)
-    try:
-        cmd = r'abaqus job=genOdb input="%s" cpus=4'%workspaceInp
-    except:
-        pass
+    staFile = os.path.join(workspacePath,"genOdb_%s.sta"%(workspacePath.split("_")[-1]))
+    cmd = r'abaqus memory=8000mb job=genOdb_%s input="%s" cpus=4'%(workspacePath.split("_")[-1],workspaceInp)
     os.chdir(workspacePath)
     if par.material_stability(x):
+        while no_memory():
+            time.sleep(156)
         pCall = subprocess.call(cmd,shell=True)
-        time.sleep(780)
+        tConst =0
+        while not isCompleted(staFile,tConst):
+            time.sleep(180)
+            tConst+=1
         removefiles(0,workspacePath)
         ## PostProcessing
         if pCall==0:
@@ -84,16 +112,11 @@ def Abqfunc(x,orifile,workspacePath):
             if pCall2==0:
                 outputName = os.path.join(workspacePath,"feaResults.ascii")
                 dat= np.genfromtxt(outputName, delimiter=",")
-                mdic = {"dat": dat, "label": "experiment"}
-                output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
-                savemat(output, mdic)
+                write2matlab(dat,workspacePath)
                 return None
     else:
         dat = np.zeros([4,12])
-        mdic = {"dat": dat, "label": "experiment"}
-        output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
-        savemat(output, mdic)        
-
+        write2matlab(dat,workspacePath)
 ## Run script
 # x0 = np.array([20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583]) # 20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583
 # inp3 = 1  # this is required to test the file without matlab
@@ -104,7 +127,6 @@ dictn =[]
 for i in range(1,len(sys.argv)):
     dictn.append(sys.argv[i])
 x0 =np.hstack([dictn])
-
 workspacePath,Mcount=communicate()
 data = Abqfunc(x0,orifile,workspacePath)
 # try:

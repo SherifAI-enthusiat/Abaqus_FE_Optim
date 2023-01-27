@@ -12,7 +12,7 @@ def display(data):
 odbToolbox = os.path.join(absPath,"postProTools")
 outputFile = os.path.join(workspacePath,"feaResults.ascii")
 genFile = os.path.join(absPath,"feaAll.ascii")
-odbFile = os.path.join(workspacePath,"genOdb.odb")
+odbFile = os.path.join(workspacePath,"genOdb_%s.odb"%(workspacePath.split("_")[-1]))
 sys.path.append(odbToolbox)
 # sys.path.append(ContactTool)
 import tools.odbTools as odbTools
