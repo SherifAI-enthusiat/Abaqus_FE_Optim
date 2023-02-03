@@ -11,7 +11,7 @@ def display(data):
             file.writelines(cm)
 odbToolbox = os.path.join(absPath,"postProTools")
 outputFile = os.path.join(workspacePath,"feaResults.ascii")
-genFile = os.path.join(absPath,"feaAll.ascii")
+# genFile = os.path.join(absPath,"feaAll.ascii")
 odbFile = os.path.join(workspacePath,"genOdb_%s.odb"%(workspacePath.split("_")[-1]))
 sys.path.append(odbToolbox)
 # sys.path.append(ContactTool)
@@ -25,9 +25,9 @@ for ind,stpName in enumerate(myOdb.steps.keys()):
         MenExt = ext.getU_Magnitude(myOdb,"CALIBRATIONNODES",stpName)
         dictn1.append([MenExt[-1]])
 # display(dictn1)
-with open(outputFile,'a') as datFile_1, open(genFile,'w') as datFile_2:
+with open(outputFile,'a') as datFile_1:#, open(genFile,'w') as datFile_2:
     tempN1= np.vstack(dictn1); #tempN2= np.vstack(dictn2)
     np.savetxt(datFile_1,tempN1,delimiter=',',fmt='%s')
-    np.savetxt(datFile_2,tempN1,delimiter=',',fmt='%s')
+    # np.savetxt(datFile_2,tempN1,delimiter=',',fmt='%s')
 
 myOdb.close()

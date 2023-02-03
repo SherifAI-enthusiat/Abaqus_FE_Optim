@@ -1,9 +1,7 @@
 /MatlabOutput/Figures
 /MatlabOutput/output_*.mat
 /runDir/workspace_*
-/Other/testJob.cae
-/Other/testJob.jnl
-/Other/testPinch2.inp
+/Other/Legacy/
 /Outcomes/Previous
 /Other/ortho/param_values.csv
 ./vscode
@@ -12,6 +10,7 @@ ScipyTests.code-workspace
 ## Python generated files Files
 myscript.asv
 runFile.asv
+WorkQueue.ascii
 feaAll.ascii
 *.pyc
 *.pyo
