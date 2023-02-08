@@ -1,4 +1,4 @@
-% E_Fval =zeros(size(solutions,2),3);
+% E_Fval = zeros(size(solutions,2),3);
 % for i=1:size(solutions,2)
 %     E_Fval(i,1:2) = solutions(1,i).X;
 %     E_Fval(i,3) = solutions(1,i).Fval;

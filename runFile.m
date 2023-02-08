@@ -5,7 +5,7 @@ x0 =[20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583]; % [20,20,100,0.3,0.2,0.2,4.7115
 lb =[.01,.01,1,.01,.01,.01,1,1,1];
 ub =[20,20,250,.5,.5,.5,20,30,30];
 % % % Custom points ---> Latin Hypercube sampling
-ptmatrix= myhypercsample(50,"trans"); % Number of samples is more releveant here.
+ptmatrix= myhypercsample(50,"ortho"); % Number of samples is more relevant here.
 tpoints = CustomStartPointSet(ptmatrix);
 % x0 =[210,.3];  % the ans is 250,.3 I believe.
 % lb =[100,.15]; ub = [300,.5];

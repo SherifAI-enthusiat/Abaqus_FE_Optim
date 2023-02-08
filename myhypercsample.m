@@ -18,7 +18,7 @@ function [dat] = myhypercsample(SampNo,keyword)
     dat = zeros(SampNo,n);
     div = round(m/SampNo);
     tdiv = div; ndiv = 1; k = 1;
-    while m > ndiv
+    while m > ndiv && k<=SampNo
         tmp = T(ndiv:tdiv,:);
         pn = randperm(div);
         dat(k,:) = rmmissing(tmp(pn(1),:));
