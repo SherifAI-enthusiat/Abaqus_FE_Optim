@@ -51,10 +51,11 @@ def fileReader(filePath,cpPath=None):
 ## Check solution has finished
 def isCompleted(staFile,tConst):
     try:
-        if fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+        fileContent = fileReader(staFile)[-1]
+        if  fileContent == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
             val = True
-        elif tConst==50 or fileReader(staFile)[-1] ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
-            val = True
+        elif tConst==20 or fileContent ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
+            val = False
         else: val=False
     except:
         val = False
