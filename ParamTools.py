@@ -48,9 +48,9 @@ def material_stability(param):
     cr7 = 1 - var[3]*v21 - var[5]*v32 - var[4]*v31 - 2*var[3]*v32*var[4] >0
 
     if criMod and cr1 and cr2 and cr3 and cr7:
-        return 1
+        return True
     else:
-        return 0
+        return False
 
 def transverseIso(param):
     var = np.array(param,dtype=float)
@@ -61,11 +61,11 @@ def transverseIso(param):
         cr3 = var[4]==var[5] # vpt
        # cr4 = var[7]==var[8] # Gt
         if cr2 and cr3:    
-            return 1
+            return True
         else:
-            return 0
+            return  False
     else:
-        return 0
+        return False
 
 def iter_tools(*array):
     for param in product(*array):

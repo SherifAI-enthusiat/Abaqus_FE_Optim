@@ -1,7 +1,8 @@
 /MatlabOutput/Figures
 /MatlabOutput/output_*.mat
 /runDir/workspace_*
-/Other/Legacy/
+/Other/testJob.*
+/Other/testPinch2.inp
 /Outcomes/Previous
 /Other/ortho/param_values.csv
 ./vscode

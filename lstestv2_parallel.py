@@ -30,9 +30,9 @@ def Abqfunc(x,orifile,workspacePath):
     ## Code to write new .inp file
     workspaceInp = write2InpFile.writeInp(x,orifile,workspacePath,inpName)
     staFile = os.path.join(workspacePath,"genOdb_%s.sta"%(workspacePath.split("_")[-1]))
-    cmd = r'abaqus memory=20000mb job=genOdb_%s input="%s" cpus=4'%(workspacePath.split("_")[-1],workspaceInp)
     os.chdir(workspacePath)
-    if par.material_stability(x):
+    if par.material_stability(x) and check:
+        cmd = r'abaqus memory=20000mb job=genOdb_%s input="%s" cpus=4'%(workspacePath.split("_")[-1],workspaceInp)
         while check:
             process_queue, check = HelperFunc.ManageQueue(cmd,Mcount,check)
         while not process_queue.empty():
