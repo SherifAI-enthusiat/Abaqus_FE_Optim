@@ -2,7 +2,7 @@
 # from scipy.optimize import minimize
 from scipy.io import savemat
 import numpy as np
-import subprocess,os,sys,shutil
+import subprocess,os,sys
 import time, psutil
 import pathlib2 as pth
 import write2InpFile
@@ -39,11 +39,13 @@ def Abqfunc(x,orifile,workspacePath):
             while HelperFunc.no_memory():
                 time.sleep(156)
             process = process_queue.get()
-            subprocess.Popen(process,shell=True)
-        
+            pro = subprocess.Popen(process,stdout=subprocess.PIPE,shell=True,
+                             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         while not HelperFunc.isCompleted(staFile,tConst):
             time.sleep(60)
             tConst+=1
+        # if tConst >= 2:
+        #     HelperFunc.kill_proc(pro.pid)
         HelperFunc.removefiles(0,workspacePath)
         ## PostProcessing
     if check== False and HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
@@ -59,7 +61,7 @@ def Abqfunc(x,orifile,workspacePath):
         dat = np.zeros([4,12])
         HelperFunc.write2matlab(dat,workspacePath)
 ## Run script
-# x0 = np.array([20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583]) # 20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583
+# x0 = np.array([20.0, 10.0, 50.0, 0.3, 0.2, 0.2, 4.71, 1.46,1.46]) # 20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583
 # inp3 = 1
 # Mcount = 1  # this is required to test the file without matlab
 # runDir = os.path.join(basePath,"runDir")

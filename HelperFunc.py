@@ -50,15 +50,19 @@ def fileReader(filePath,cpPath=None):
 
 ## Check solution has finished
 def isCompleted(staFile,tConst):
+    val = False
     try:
-        fileContent = fileReader(staFile)[-1]
-        if  fileContent == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+        if fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
             val = True
-        elif tConst==20 or fileContent ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
-            val = False
-        else: val=False
     except:
-        val = False
+        try:
+            if fileReader(staFile)[-1] ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
+                val = True
+        except:
+            if tConst>=20:
+                val = True
+            else: val = False
+        return val
     return val
 
 def ManageQueue(Process,Mcount,check):
@@ -113,3 +117,16 @@ def initialise():
         else:
             pass
     return
+
+def kill_proc(pid, including_parent=True):
+    pids = psutil.pids()
+    for item,key in psutil.Process:
+        if item.Startwith("SMA"):
+            parent = psutil.Process(key)
+            children = parent.children(recursive=True)
+            for child in children:
+                child.kill()
+            gone, still_alive = psutil.wait_procs(children, timeout=5)
+            if including_parent:
+                parent.kill()
+                parent.wait(5)
