@@ -31,5 +31,5 @@ for line in lines:
     itms=line.split(",")
     for itm in itms:
         lst.append(float(itm))
-    test = par.material_stability(lst)
+    test = par.transverseIso(lst) and par.material_stability(lst)
     print(test)
