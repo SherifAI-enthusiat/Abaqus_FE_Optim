@@ -1,19 +1,13 @@
 % Global count
 clear,clc;
 pyrunfile("initialiseJob.py");
-x0 =[20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583]; % [20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583]
-lb =[.01,.01,1,.01,.01,.01,1,1,1];
-ub =[20,20,250,.5,.5,.5,20,30,30];
+x0 =[20,50,.05,.05,1.4583]; % Here I am only interested in Ep,Ef and Gpf [20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583]
+lb =[.01,1,.01,.01,1]; % This is the lower bound 
+ub =[20,250,.5,.5,30]; % This is the lower bound 
 % % % Custom points ---> Latin Hypercube sampling
-ptmatrix= myhypercsample(50,"ortho"); % Number of samples is more relevant here.
-tpoints = CustomStartPointSet(ptmatrix);
-% x0 =[210,.3];  % the ans is 250,.3 I believe.
-% lb =[100,.15]; ub = [300,.5];
-% v1 = 100:10:300;
-% v2 = .15:.05:.5;
-% [X,Y] = meshgrid(v1,v2);
-% ptmatrix = [X(:),Y(:)];
-% tpoints = CustomStartPointSet(ptmatrix);
+ptmatrix= myhypercsample(50,"trans"); % This can be only be "trans" in the "three_param" branch.
+datn = ptmatrix(:,[1,3,4,5,end]) % This is just Ep,Ef,vp,vpt and Gpf. Other params will be fixed or calculated
+tpoints = CustomStartPointSet(datn);
 % Previous Uncomment to use lsqnonlin and fmincon
 options = optimoptions(@lsqnonlin,'Algorithm','trust-region-reflective'); % optimoptions(@fmincon,'Algorithm','interior-point');
 options.PlotFcns = 'optimplotresnorm'; %  'optimplotfirstorderopt'
