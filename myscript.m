@@ -1,7 +1,7 @@
 function [outputn] = myscript(x)
-% This function evaluates a Abaqus and returns a variable "count" which is
+% This function evaluates in Abaqus and returns a variable "count" which is
 % used to locate the results file.
-    vp = .3; vf_p = .2;
+    vp = .01; vf_p = .01;
     Gp = x(1)/(2*(1+vp)); % Gp
     x = [x(1),x(1),x(2),vp,vf_p,vf_p,Gp,x(3),x(3)];
     formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d';%% This is where I can change bits.

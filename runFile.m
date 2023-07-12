@@ -23,3 +23,4 @@ ms = MultiStart;
 ms.UseParallel = true;
 % pool = parpool(3); % Trying to address error "IdleTimeout has been reached."
 [Xnew,fval,exitflag,output,solutions]= run(ms,problem,tpoints);
+save("last_run.mat")

@@ -48,6 +48,7 @@ def Abqfunc(x,orifile,workspacePath):
         #     HelperFunc.kill_proc(pro.pid)
         HelperFunc.removefiles(0,workspacePath)
         ## PostProcessing
+    dat = np.zeros([4,12])
     if check== False and HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
             os.chdir(basePath)
             commandn = r'%s -- "%s"'%(command,workspacePath)
@@ -56,9 +57,9 @@ def Abqfunc(x,orifile,workspacePath):
                 outputName = os.path.join(workspacePath,"feaResults.ascii")
                 dat= np.genfromtxt(outputName, delimiter=",")
                 HelperFunc.write2matlab(dat,workspacePath)
-                return None
+            else:
+                HelperFunc.write2matlab(dat,workspacePath)
     else:
-        dat = np.zeros([4,12])
         HelperFunc.write2matlab(dat,workspacePath)
 ## Run script
 # x0 = np.array([20.0, 10.0, 50.0, 0.3, 0.2, 0.2, 4.71, 1.46,1.46]) # 20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583
@@ -66,6 +67,7 @@ def Abqfunc(x,orifile,workspacePath):
 # Mcount = 1  # this is required to test the file without matlab
 # runDir = os.path.join(basePath,"runDir")
 # workspacePath = os.path.join(runDir,"workspace_%s"%(inp3))#inp3
+# data = Abqfunc(x0,orifile,workspacePath)
 
 ## Matlab version
 dictn =[]
