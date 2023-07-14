@@ -50,20 +50,18 @@ def fileReader(filePath,cpPath=None):
 
 ## Check solution has finished
 def isCompleted(staFile,tConst):
-    val = False
-    try:
+    val = False;Tcmd = False
+    try: # This is the default case that I always want it to check.
         if fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
-            val = True
-    except:
-        try:
-            if fileReader(staFile)[-1] ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
-                val = True
-        except:
-            if tConst>=20:
-                val = True
-            else: val = False
-        return val
-    return val
+            val = True; Tcmd = False
+        elif fileReader(staFile)[-1] ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
+            val = True; Tcmd = False
+        elif tConst>=80:
+            val = True; Tcmd = True
+        else: val = False; Tcmd = False
+    except: # This case occurs when the .sta file is not yet written.
+            val = False; Tcmd = False
+    return val,Tcmd
 
 def ManageQueue(Process,Mcount,check):
     if Mcount==1:
@@ -118,15 +116,12 @@ def initialise():
             pass
     return
 
-def kill_proc(pid, including_parent=True):
-    pids = psutil.pids()
-    for item,key in psutil.Process:
-        if item.Startwith("SMA"):
-            parent = psutil.Process(key)
-            children = parent.children(recursive=True)
-            for child in children:
-                child.kill()
-            gone, still_alive = psutil.wait_procs(children, timeout=5)
-            if including_parent:
-                parent.kill()
-                parent.wait(5)
+def kill_proc(jobName):
+    processes = psutil.process_iter()
+    for process in processes:
+        try:
+            tmp=process.cmdline()
+            if jobName in tmp:
+                process.terminate()
+        except:
+            continue

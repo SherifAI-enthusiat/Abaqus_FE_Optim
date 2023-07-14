@@ -29,6 +29,7 @@ def Abqfunc(x,orifile,workspacePath):
     check = True; tConst =0
     ## Code to write new .inp file
     workspaceInp = write2InpFile.writeInp(x,orifile,workspacePath,inpName)
+    jobName = "genOdb_%s"%(workspacePath.split("_")[-1])
     staFile = os.path.join(workspacePath,"genOdb_%s.sta"%(workspacePath.split("_")[-1]))
     os.chdir(workspacePath)
     if par.material_stability(x) and check:
@@ -41,11 +42,11 @@ def Abqfunc(x,orifile,workspacePath):
             process = process_queue.get()
             pro = subprocess.Popen(process,stdout=subprocess.PIPE,shell=True,
                              creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-        while not HelperFunc.isCompleted(staFile,tConst):
+        while not HelperFunc.isCompleted(staFile,tConst)[0]:
             time.sleep(60)
             tConst+=1
-        # if tConst >= 2:
-        #     HelperFunc.kill_proc(pro.pid)
+        if HelperFunc.isCompleted(staFile,tConst)[1]:
+            HelperFunc.kill_proc(jobName)
         HelperFunc.removefiles(0,workspacePath)
         ## PostProcessing
     dat = np.zeros([4,12])
@@ -61,8 +62,8 @@ def Abqfunc(x,orifile,workspacePath):
                 HelperFunc.write2matlab(dat,workspacePath)
     else:
         HelperFunc.write2matlab(dat,workspacePath)
-## Run script
-# x0 = np.array([20.0, 10.0, 50.0, 0.3, 0.2, 0.2, 4.71, 1.46,1.46]) # 20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583
+# ## Run script
+# x0 = np.array([6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks
 # inp3 = 1
 # Mcount = 1  # this is required to test the file without matlab
 # runDir = os.path.join(basePath,"runDir")
