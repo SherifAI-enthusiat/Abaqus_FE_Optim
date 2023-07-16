@@ -25,3 +25,15 @@ end
 act = [0,20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583];
 new=[act;new];
 writematrix(new,"optimised.txt")
+
+%% Gaussian test
+clear,clc
+vars_Ep = optimizableVariable('Ep',[.01,20]);
+vars_Ef = optimizableVariable('Ef',[1,250]);
+vars_Gpf = optimizableVariable('Gpf',[1,30]);
+vars = [vars_Ep,vars_Ef,vars_Gpf];
+x0 = [20,50,1.4583];
+fun = myscript(x0);
+results = bayesopt(fun,[vars_Ep,vars_Ef,vars_Gpf],'Verbose',0,...
+    'AcquisitionFunctionName','expected-improvement-plus',UseParallel=true); % MinWorkerUtilization=3
+

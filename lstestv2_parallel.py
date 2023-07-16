@@ -63,20 +63,20 @@ def Abqfunc(x,orifile,workspacePath):
     else:
         HelperFunc.write2matlab(dat,workspacePath)
 # ## Run script
-# x0 = np.array([6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks
-# inp3 = 1
-# Mcount = 1  # this is required to test the file without matlab
-# runDir = os.path.join(basePath,"runDir")
-# workspacePath = os.path.join(runDir,"workspace_%s"%(inp3))#inp3
-# data = Abqfunc(x0,orifile,workspacePath)
+x0 = np.array([6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks
+inp3 = 1
+Mcount = 1  # this is required to test the file without matlab
+runDir = os.path.join(basePath,"runDir")
+workspacePath = os.path.join(runDir,"workspace_%s"%(inp3))#inp3
+data = Abqfunc(x0,orifile,workspacePath)
 
 ## Matlab version
-dictn =[]
-for i in range(1,len(sys.argv)):
-    dictn.append(sys.argv[i])
-x0 =np.hstack([dictn])
-workspacePath,Mcount=HelperFunc.communicate()
-data = Abqfunc(x0,orifile,workspacePath)
+# dictn =[]
+# for i in range(1,len(sys.argv)):
+#     dictn.append(sys.argv[i])
+# x0 =np.hstack([dictn])
+# workspacePath,Mcount=HelperFunc.communicate()
+# data = Abqfunc(x0,orifile,workspacePath)
 # try:
 #     shutil.rmtree(workspacePath)
 # except:
