@@ -28,6 +28,7 @@ writematrix(new,"optimised.txt")
 
 %% Gaussian test
 clear,clc
+pyrunfile("initialiseJob.py");
 vars_Ep = optimizableVariable('Ep',[.01,20]);
 vars_Ef = optimizableVariable('Ef',[1,250]);
 vars_Gpf = optimizableVariable('Gpf',[1,30]);
