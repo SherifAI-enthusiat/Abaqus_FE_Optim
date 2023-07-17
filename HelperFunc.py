@@ -1,5 +1,6 @@
 import os,sys
 import glob
+from tkinter import messagebox
 import psutil, shutil
 from scipy.io import savemat
 import numpy as np
@@ -56,7 +57,7 @@ def isCompleted(staFile,tConst):
             val = True; Tcmd = False
         elif fileReader(staFile)[-1] ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
             val = True; Tcmd = False
-        elif tConst>=80:
+        elif tConst>=120:
             val = True; Tcmd = True
         else: val = False; Tcmd = False
     except: # This case occurs when the .sta file is not yet written.
@@ -107,6 +108,7 @@ def initialise():
     output = glob.glob(os.path.join(MatlabOutput,"output_*.mat"))
     queFile = [os.path.join(basePath,"WorkQueue.ascii")]
     files2delete = workspacePaths + output + queFile
+    kill_proc('SMA')
     for path in files2delete:
         if os.path.isdir(path):
             shutil.rmtree(path)
@@ -122,6 +124,10 @@ def kill_proc(jobName):
         try:
             tmp=process.cmdline()
             if jobName in tmp:
-                process.terminate()
+                if jobName =="SMA": # This is to ensure that the process that is closed is the right one.
+                    results = messagebox.askyesno("Confirm process termination", f"Are you sure you want to terminate {process.name()}?")
+                    if results:
+                        process.terminate()
+                process.terminate() # This is the default case if the item is in tmp
         except:
             continue

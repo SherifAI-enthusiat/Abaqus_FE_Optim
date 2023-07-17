@@ -50,15 +50,15 @@ def Abqfunc(x,orifile,workspacePath):
         HelperFunc.removefiles(0,workspacePath)
         ## PostProcessing
     dat = np.zeros([4,12])
-    if check== False and HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+    if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
             os.chdir(basePath)
             commandn = r'%s -- "%s"'%(command,workspacePath)
             pCall2 = subprocess.call(commandn, shell=True)
-            if pCall2==0:
+            try:
                 outputName = os.path.join(workspacePath,"feaResults.ascii")
                 dat= np.genfromtxt(outputName, delimiter=",")
                 HelperFunc.write2matlab(dat,workspacePath)
-            else:
+            except:
                 HelperFunc.write2matlab(dat,workspacePath)
     else:
         HelperFunc.write2matlab(dat,workspacePath)
