@@ -15,9 +15,12 @@ queFile = os.path.join(basePath,"WorkQueue.ascii")
 runDir = os.path.join(basePath,"runDir")
 
 def write2File(outFile,dictn1):
-    with open(outFile,'a') as datFile_1:
-        tempN1= np.array([dictn1]); #tempN2= np.vstack(dictn2)
-        np.savetxt(datFile_1,tempN1,delimiter=',',fmt='%s')
+    try:
+        with open(outFile,'a') as datFile_1:
+            tempN1= np.array([dictn1]); #tempN2= np.vstack(dictn2)
+            np.savetxt(datFile_1,tempN1,delimiter=',',fmt='%s')
+    except: 
+        pass
     return 
 
 def removefiles(mode,path=None):
@@ -97,8 +100,11 @@ def communicate():
         count+=1
         workspacePath = os.path.join(runDir,"workspace_%s"%(count))#inp3
         if not os.path.isdir(workspacePath):
-            os.mkdir(workspacePath)
-            key=False
+            try:
+                os.mkdir(workspacePath)
+                key=False
+            except:
+                pass
     return workspacePath,count
 
 ## The aim of this function is to check and ensure everything is in order before starting the optimisation
@@ -130,4 +136,4 @@ def kill_proc(jobName):
                         process.terminate()
                 process.terminate() # This is the default case if the item is in tmp
         except:
-            continue
+            pass
