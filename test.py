@@ -22,14 +22,85 @@ def fileReader(filePath,cpPath=None):
         for line in lines:
             newmsgfile.writelines(line)
     return lines
-cwd = os.getcwd()
-paramFile = os.path.join(cwd,"param.ascii") # Test Parameters
-lines = fileReader(paramFile)
-lst =[]
-for line in lines:
-    line = line.strip("\n")
-    itms=line.split(",")
-    for itm in itms:
-        lst.append(float(itm))
-    test = par.material_stability(lst) and par.transverseIso(lst)
-    print(test)
+# paramFile = os.path.join(cwd,"param.ascii") # Test Parameters
+# lines = fileReader(paramFile)
+# lst =[]
+# for line in lines:
+#     line = line.strip("\n")
+#     itms=line.split(",")
+#     for itm in itms:
+#         lst.append(float(itm))
+#     test = par.material_stability(lst) and par.transverseIso(lst)
+#     print(test)
+
+## Test to determine if stafile is the reason for failure to read results
+# stafile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_100\genOdb_100.sta"
+# basePath = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
+# while not os.path.exists(stafile):
+#     print("Works")
+# if fileReader(stafile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+#     dataRet = os.path.join(basePath,"dataRetrieval.py")
+#     command = 'abaqus python "%s"'%dataRet
+# co =0
+# for it in range(6):
+#     co+=co
+#     print(co)
+import HelperFunc
+import subprocess
+import time
+import numpy as np
+workspacePath = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1"
+basePath = os.getcwd()
+staFile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.sta"
+dataRet = os.path.join(basePath,"dataRetrieval.py")
+command = 'abaqus python "%s"'%dataRet
+dat = np.zeros([4,12])
+# if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+#         os.chdir(basePath); count =0
+#         outputName = os.path.join(workspacePath,"feaResults.ascii")
+#         commandn = r'%s -- "%s"'%(command,workspacePath)
+#         while not os.path.exists(outputName) and count<=8:
+#             pro = subprocess.Popen(commandn,stdout=subprocess.PIPE,shell=True,
+#                              creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+#             if not os.path.exists(outputName):
+#                 time.sleep(60)
+#                 count += 1
+#         try:
+#             dat= np.genfromtxt(outputName, delimiter=",")
+#             HelperFunc.write2matlab(dat,workspacePath)
+#         except:
+#             HelperFunc.write2matlab(dat,workspacePath)
+# else:
+#     HelperFunc.write2matlab(dat,workspacePath)
+
+### 
+from queue import Queue
+output_queue = Queue(maxsize=1)
+parent_pid = 0
+##
+if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+        os.chdir(basePath); count = 0
+        outputName = os.path.join(workspacePath,"feaResults.ascii")
+        commandn = r'%s -- "%s"'%(command,workspacePath)
+        # I need to put the command in the queue and wait until done
+        # dir1,file1 = os.path.split(workspacePath)
+        dir2,file2 = os.path.split(outputName)
+        output_queue.put(commandn)
+        while not output_queue.empty():
+            while not os.path.exists(outputName) and workspacePath==dir2 and count <=8:
+                process = output_queue.get()
+                pro = subprocess.Popen(process,stdout=subprocess.PIPE,shell=True,
+                                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+                if not os.path.exists(outputName):
+                    time.sleep(60)
+                    count += 1
+            try:
+                dat= np.genfromtxt(outputName, delimiter=",")
+                HelperFunc.write2matlab(dat,workspacePath)
+            except:
+                HelperFunc.write2matlab(dat,workspacePath)
+else:
+    HelperFunc.write2matlab(dat,workspacePath)
+
+
+

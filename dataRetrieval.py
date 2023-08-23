@@ -18,7 +18,10 @@ sys.path.append(odbToolbox)
 import tools.odbTools as odbTools
 import tools.extractors as ext
 # import OdbTool_1_ver1 as AnOdb_tool
-myOdb = odbTools.openOdb(odbFile)
+try:
+    myOdb = odbTools.openOdb(odbFile)
+except:
+    display(odbFile)
 dictn1=[]
 for ind,stpName in enumerate(myOdb.steps.keys()):
     if stpName.startswith('Load'):
