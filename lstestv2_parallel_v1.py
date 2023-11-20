@@ -67,10 +67,10 @@ def Abqfunc(x,orifile,workspacePath):
     workspace = os.path.join(workspacePath,inpName)
     with open(workspace,"w+") as file:
         file.writelines(lines)
-    cmd = 'abaqus job=genOdb_%s input="%s" cpus=4'%(Mcount,workspace)
+    cmd = 'abaqus job=genOdb_%s input="%s" cpus=3'%(Mcount,workspace)
     os.chdir(workspacePath)
     pCall = subprocess.call(cmd, shell=True)
-    time.sleep(75)
+    time.sleep(65)
     removefiles(0,workspacePath)
     ## PostProcessing
     if pCall==0:
@@ -80,10 +80,11 @@ def Abqfunc(x,orifile,workspacePath):
         if pCall2==0:
             outputName = os.path.join(workspacePath,"feaResults.ascii")
             dat= np.genfromtxt(outputName, delimiter=",")
-            mdic = {"dat": dat, "label": "experiment"}
+            # mdic = {"dat": dat, "label": "experiment"}
+            mdic = {"dat": dat}
             output = os.path.join(MatlabOutput,"output_%s.mat"%(Mcount))
             savemat(output, mdic)
-            return None
+            return dat
 
 # ## Run script
 # inpArg = 'lstestv2_parallel_v1.py 150 3.250000e-01'
