@@ -12,6 +12,7 @@ basePath =os.getcwd()
 os.chdir(basePath)
 MatlabOutput = os.path.join(basePath,"MatlabOutput")
 queFile = os.path.join(basePath,"WorkQueue.ascii")
+OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
 runDir = os.path.join(basePath,"runDir")
 
 def write2File(outFile,dictn1):
@@ -107,7 +108,9 @@ def initialise():
     workspacePaths = glob.glob(os.path.join(runDir,"workspace_*"))#inp3
     output = glob.glob(os.path.join(MatlabOutput,"output_*.mat"))
     queFile = [os.path.join(basePath,"WorkQueue.ascii")]
-    files2delete = workspacePaths + output + queFile
+    debugFile = [os.path.join(basePath,"debugReport.ascii")]
+    OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
+    files2delete = workspacePaths + output + queFile + debugFile
     kill_proc('SMA')
     for path in files2delete:
         if os.path.isdir(path):
@@ -131,3 +134,7 @@ def kill_proc(jobName):
                 process.terminate() # This is the default case if the item is in tmp
         except:
             continue
+
+def OdbQueue(command):
+    with open(OdbqueFile,"+a") as jobFile:
+        jobFile.writelines(command+"\n")

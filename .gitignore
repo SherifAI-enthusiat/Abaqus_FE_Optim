@@ -13,6 +13,7 @@ ScipyTests.code-workspace
 myscript.asv
 runFile.asv
 WorkQueue.ascii
+debugReport.ascii
 feaAll.ascii
 *.pyc
 *.pyo

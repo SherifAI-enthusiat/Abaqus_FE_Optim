@@ -11,18 +11,18 @@
 # print(no_memory())
 
 ### Test a given list of material parameters to see if they are transverse isotropic
-import ParamTools as par
-import os
-def fileReader(filePath,cpPath=None):
-    dataFile = open(filePath,"r")
-    lines = dataFile.readlines()
-    dataFile.close()
-    if cpPath!=None:
-        newmsgfile = open(cpPath,"w")
-        for line in lines:
-            newmsgfile.writelines(line)
-    return lines
-# paramFile = os.path.join(cwd,"param.ascii") # Test Parameters
+# import ParamTools as par
+# import os
+# def fileReader(filePath,cpPath=None):
+#     dataFile = open(filePath,"r")
+#     lines = dataFile.readlines()
+#     dataFile.close()
+#     if cpPath!=None:
+#         newmsgfile = open(cpPath,"w")
+#         for line in lines:
+#             newmsgfile.writelines(line)
+#     return lines
+# # paramFile = os.path.join(cwd,"param.ascii") # Test Parameters
 # lines = fileReader(paramFile)
 # lst =[]
 # for line in lines:
@@ -45,16 +45,16 @@ def fileReader(filePath,cpPath=None):
 # for it in range(6):
 #     co+=co
 #     print(co)
-import HelperFunc
-import subprocess
-import time
-import numpy as np
-workspacePath = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1"
-basePath = os.getcwd()
-staFile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.sta"
-dataRet = os.path.join(basePath,"dataRetrieval.py")
-command = 'abaqus python "%s"'%dataRet
-dat = np.zeros([4,12])
+# import HelperFunc
+# import subprocess
+# import time
+# import numpy as np
+# workspacePath = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1"
+# basePath = os.getcwd()
+# staFile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.sta"
+# dataRet = os.path.join(basePath,"dataRetrieval.py")
+# command = 'abaqus python "%s"'%dataRet
+# dat = np.zeros([4,12])
 # if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
 #         os.chdir(basePath); count =0
 #         outputName = os.path.join(workspacePath,"feaResults.ascii")
@@ -74,33 +74,51 @@ dat = np.zeros([4,12])
 #     HelperFunc.write2matlab(dat,workspacePath)
 
 ### 
-from queue import Queue
-output_queue = Queue(maxsize=1)
-parent_pid = 0
-##
-if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
-        os.chdir(basePath); count = 0
-        outputName = os.path.join(workspacePath,"feaResults.ascii")
-        commandn = r'%s -- "%s"'%(command,workspacePath)
-        # I need to put the command in the queue and wait until done
-        # dir1,file1 = os.path.split(workspacePath)
-        dir2,file2 = os.path.split(outputName)
-        output_queue.put(commandn)
-        while not output_queue.empty():
-            while not os.path.exists(outputName) and workspacePath==dir2 and count <=8:
-                process = output_queue.get()
-                pro = subprocess.Popen(process,stdout=subprocess.PIPE,shell=True,
-                                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-                if not os.path.exists(outputName):
-                    time.sleep(60)
-                    count += 1
-            try:
-                dat= np.genfromtxt(outputName, delimiter=",")
-                HelperFunc.write2matlab(dat,workspacePath)
-            except:
-                HelperFunc.write2matlab(dat,workspacePath)
-else:
-    HelperFunc.write2matlab(dat,workspacePath)
+# from queue import Queue
+# output_queue = Queue(maxsize=1)
+# parent_pid = 0
+# ##
+# if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+#         os.chdir(basePath); count =0
+#         output_queue = Queue(maxsize=1)
+#         outputName = os.path.join(workspacePath,"feaResults.ascii")
+#         commandn = r'%s -- "%s"'%(command,workspacePath)
+#         dir2 = os.path.split(outputName)
+#         output_queue.put(commandn)
+#         while not output_queue.empty():
+#             while not os.path.exists(outputName) and workspacePath==dir2[0] and count<=8:
+#                 process = output_queue.get()
+#                 pro = subprocess.Popen(process,stdout=subprocess.PIPE,shell=True,
+#                                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+#                 if not os.path.exists(outputName):
+#                     time.sleep(60)
+#                     count += 1
+#             try:
+#                 dat= np.genfromtxt(outputName, delimiter=",")
+#                 HelperFunc.write2matlab(dat,workspacePath)
+#             except:
+#                 HelperFunc.write2matlab(dat,workspacePath)
+# else:
+#     HelperFunc.write2matlab(dat,workspacePath)
 
+
+#### 
+import os
+def fileReader(filePath,cpPath=None):
+    dataFile = open(filePath,"r")
+    lines = dataFile.readlines()
+    dataFile.close()
+    if cpPath!=None:
+        newmsgfile = open(cpPath,"w")
+        for line in lines:
+            newmsgfile.writelines(line)
+    return lines
+absPath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
+workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.odb"
+OdbqueFile = os.path.join(absPath,"OdbQueue.ascii")
+item2test = fileReader(OdbqueFile)[-1]
+if item2test == workspacePath:
+    test = True
+else:  test = False
 
 
