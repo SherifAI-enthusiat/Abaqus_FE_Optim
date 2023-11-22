@@ -32,70 +32,46 @@ def Abqfunc(x,orifile,workspacePath):
     jobName = "genOdb_%s"%(workspacePath.split("_")[-1])
     staFile = os.path.join(workspacePath,"genOdb_%s.sta"%(workspacePath.split("_")[-1]))
     os.chdir(workspacePath)
-    if par.material_stability(x) and check:
+    if par.material_stability(x):
         cmd = r'abaqus memory=20000mb job=genOdb_%s input="%s" cpus=4'%(workspacePath.split("_")[-1],workspaceInp)
-        while check:
-            process_queue, check = HelperFunc.ManageQueue(cmd,Mcount,check)
-        while not process_queue.empty():
-            while HelperFunc.no_memory():
-                time.sleep(156)
-            process = process_queue.get()
-            pro = subprocess.Popen(process,stdout=subprocess.PIPE,shell=True,
+        pro = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True,
                              creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-        val,Tcmd = HelperFunc.isCompleted(staFile,tConst)[0]
-        while not val:
+        
+        while not HelperFunc.isCompleted(staFile,tConst)[0]:
             time.sleep(60)
             tConst+=1
-        if Tcmd:
+        if HelperFunc.isCompleted(staFile,tConst)[1]:
             HelperFunc.kill_proc(jobName)
         HelperFunc.removefiles(0,workspacePath)
     
-    ## PostProcessing - I want to use queues to manage where results go
-    outputName = os.path.join(workspacePath,"feaResults.ascii")
-    commandn = r'%s -- "%s"'%(command,workspacePath)
-    output_queue = Queue(maxsize=1); output_queue.put(commandn)
-    stafile_queue = Queue(maxsize=1); stafile_queue.put(staFile)
-    path_queue = Queue(maxsize=1); path_queue.put(outputName)
-    
-    dat = np.zeros([4,12])
-    while not stafile_queue.empty():
-        test = HelperFunc.fileReader(stafile_queue.get())[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n"
-        if test:
-                os.chdir(basePath); count =0
-                outputName = path_queue.get()
-                dir2 = os.path.split(outputName) # This splits it into (workspacePath,"feaResults.ascii")
-                while not output_queue.empty():
-                    commandn = output_queue.get()
-                    HelperFunc.OdbQueue(commandn.split("--")[-1])
-                    while not os.path.exists(outputName) and dir2[0] in commandn.split("--")[-1] and count<=8:
-                        pro = subprocess.Popen(commandn,stdout=subprocess.PIPE,shell=True,
-                                            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-                        if not os.path.exists(outputName):
-                            time.sleep(60)
-                            count += 1
-                    try:
-                        dat= np.genfromtxt(outputName, delimiter=",")
-                        HelperFunc.write2matlab(dat,dir2[0])
-                    except:
-                        HelperFunc.write2matlab(dat,dir2[0])
+    ## PostProcessing - I want to use queues to manage where results go    
+    if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+        os.chdir(basePath)
+        commandn = r'%s -- "%s"'%(command,workspacePath)
+        pCall2 = subprocess.call(commandn, shell=True)
+        outputName = os.path.join(workspacePath,"feaResults.ascii")
+        if os.path.exists(outputName):
+            dat= np.genfromtxt(outputName, delimiter=",")
         else:
-            if dir2[0] in commandn.split("--")[-1] and not test :
-                HelperFunc.write2matlab(dat,dir2[0])
+            dat = np.zeros([4,12])
+        output = os.path.join("MatlabOutput","output_%s.mat"%(Mcount))
+        savemat(output,{"dat": dat})
+    return dat
 # ## Run script
-x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks
-inp3 = 1
-Mcount = 1  # this is required to test the file without matlab
-runDir = os.path.join(basePath,"runDir")
-workspacePath = os.path.join(runDir,"workspace_%s"%(inp3))#inp3
-data = Abqfunc(x0,orifile,workspacePath)
+# x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks
+# inp3 = 1
+# Mcount = 1  # this is required to test the file without matlab
+# runDir = os.path.join(basePath,"runDir")
+# workspacePath = os.path.join(runDir,"workspace_%s"%(inp3))#inp3
+# data = Abqfunc(x0,orifile,workspacePath)
 
 ## Matlab version
-# dictn =[]
-# for i in range(1,len(sys.argv)):
-#     dictn.append(sys.argv[i])
-# x0 =np.hstack([dictn])
-# workspacePath,Mcount=HelperFunc.communicate()
-# data = Abqfunc(x0,orifile,workspacePath)
+dictn =[]
+for i in range(1,len(sys.argv)):
+    dictn.append(sys.argv[i])
+x0 =np.hstack([dictn])
+workspacePath,Mcount=HelperFunc.communicate()
+data = Abqfunc(x0,orifile,workspacePath)
 # # try:
 # #     shutil.rmtree(workspacePath)
 # # except:
