@@ -25,6 +25,6 @@ te = gcp('nocreate');
 if exist("te","var")==1
     delete(gcp)
 end
-pool = parpool(3);
+pool = parpool('IdleTimeout', Inf);
 [Xnew,fval,exitflag,output,solutions]= run(ms,problem,tpoints);
 save("last_run.mat")
