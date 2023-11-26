@@ -58,7 +58,7 @@ def isCompleted(staFile,tConst):
             val = True; Tcmd = False
         elif fileReader(staFile)[-1] ==" THE ANALYSIS HAS NOT BEEN COMPLETED\n":
             val = True; Tcmd = False
-        elif tConst>=120:
+        elif tConst>=130:
             val = True; Tcmd = True
         else: val = False; Tcmd = False
     except: # This case occurs when the .sta file is not yet written.
