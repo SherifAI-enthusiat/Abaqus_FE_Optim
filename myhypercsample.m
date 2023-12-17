@@ -20,8 +20,9 @@ function [dat] = myhypercsample(SampNo,keyword)
     tdiv = div; ndiv = 1; k = 1;
     while m > ndiv && k<=SampNo
         tmp = T(ndiv:tdiv,:);
-        pn = randperm(div);
-        dat(k,:) = rmmissing(tmp(pn(1),:));
+        % pn = randperm(div); % This was the initial method but advised to use mid-point instead.
+        pn = round(div/2); % This was I use the mean/mid point in the data range.
+        dat(k,:) = rmmissing(tmp(pn,:));
         ndiv=tdiv; k=k+1;
         tdiv=tdiv+div;
         if tdiv>m

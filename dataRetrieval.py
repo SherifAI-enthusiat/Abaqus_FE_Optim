@@ -22,8 +22,11 @@ myOdb = odbTools.openOdb(odbFile)
 dictn1=[]
 for ind,stpName in enumerate(myOdb.steps.keys()):
     if stpName.startswith('Load'):
-        MenExt = ext.getU_Magnitude(myOdb,"CALIBRATIONNODES",stpName)
-        dictn1.append([MenExt[-1]])
+        try:
+            MenExt = ext.getU_Magnitude(myOdb,"CALIBRATIONNODES",stpName)
+            dictn1.append([MenExt[-1]])
+        except:
+            dictn1.append([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 # display(dictn1)
 with open(outputFile,'a') as datFile_1:#, open(genFile,'w') as datFile_2:
     tempN1= np.vstack(dictn1); #tempN2= np.vstack(dictn2)

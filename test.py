@@ -103,7 +103,8 @@
 
 
 #### 
-import os
+import os,glob
+import numpy as np
 def fileReader(filePath,cpPath=None):
     dataFile = open(filePath,"r")
     lines = dataFile.readlines()
@@ -113,12 +114,26 @@ def fileReader(filePath,cpPath=None):
         for line in lines:
             newmsgfile.writelines(line)
     return lines
-absPath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
-workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.odb"
-OdbqueFile = os.path.join(absPath,"OdbQueue.ascii")
-item2test = fileReader(OdbqueFile)[-1]
-if item2test == workspacePath:
-    test = True
-else:  test = False
-
-
+# absPath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
+# workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.odb"
+# OdbqueFile = os.path.join(absPath,"OdbQueue.ascii")
+# item2test = fileReader(OdbqueFile)[-1]
+# if item2test == workspacePath:
+#     test = True
+# else:  test = False
+resultsFile = "AllResults.ascii"
+test = glob.glob("runDir\workspace_*")
+data = []
+for ind,itm in enumerate(test):
+    path1 = os.path.join(itm,'TestJob-2.inp'); 
+    path2 = os.path.join(itm,'feaResults.ascii'); 
+    dat= np.genfromtxt(path2, delimiter=",")
+    lines = fileReader(path1)
+    for ind,itm in enumerate(lines):
+        if itm.startswith('*Material') and itm.endswith('name=MENISCAL_MEN\n'):
+            tt = np.array([lines[ind+2].strip("\n")])
+            new = np.hstack([tt,dat[-1]])
+            data.append(new)
+         
+with open(resultsFile,"a+") as datFile:
+    datFile.writelines(data)
