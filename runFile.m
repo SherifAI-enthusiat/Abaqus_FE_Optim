@@ -32,7 +32,7 @@ pool = parpool('IdleTimeout', Inf);
 [Xnew,fval,exitflag,output,solutions]= run(ms,problem,100);
 save("last_run.mat")
 function [c,ceq] = trStability_Cri(x)
-    c(1) = 0.01 - sqrt(x(1)/x(2));
-    c(2) = 0.01 - sqrt(x(2)/x(1));
+    c(1) = abs(0.01 - sqrt(x(1)/x(2)));
+    c(2) = abs(0.01 - sqrt(x(2)/x(1)));
     ceq = [];
 end

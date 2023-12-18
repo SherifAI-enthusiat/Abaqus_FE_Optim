@@ -103,7 +103,7 @@
 
 
 #### 
-import os,glob
+import os,glob,subprocess
 import numpy as np
 def fileReader(filePath,cpPath=None):
     dataFile = open(filePath,"r")
@@ -114,6 +114,10 @@ def fileReader(filePath,cpPath=None):
         for line in lines:
             newmsgfile.writelines(line)
     return lines
+def dataRetrieve(wksPath):
+    commandn = r'%s -- "%s"'%(command,wksPath)
+    pCall2 = subprocess.call(commandn, shell=True)
+    return 
 # absPath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
 # workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.odb"
 # OdbqueFile = os.path.join(absPath,"OdbQueue.ascii")
@@ -123,17 +127,37 @@ def fileReader(filePath,cpPath=None):
 # else:  test = False
 resultsFile = "AllResults.ascii"
 test = glob.glob("runDir\workspace_*")
+absPath = os.path.dirname(__file__)
+dataRet = os.path.join(absPath,"dataRetrieval.py")
+command = 'abaqus python "%s"'%dataRet
 data = []
+os.chdir(absPath)
 for ind,itm in enumerate(test):
     path1 = os.path.join(itm,'TestJob-2.inp'); 
     path2 = os.path.join(itm,'feaResults.ascii'); 
-    dat= np.genfromtxt(path2, delimiter=",")
-    lines = fileReader(path1)
-    for ind,itm in enumerate(lines):
-        if itm.startswith('*Material') and itm.endswith('name=MENISCAL_MEN\n'):
-            tt = np.array([lines[ind+2].strip("\n")])
-            new = np.hstack([tt,dat[-1]])
-            data.append(new)
-         
+    path3 = os.path.join(itm,'contactResults.ascii')
+    if os.path.exists(path3):
+        try:
+            # dataRetrieve(itm) # I want to collect contact data to file
+            dat1= np.genfromtxt(path2, delimiter=",")
+            dat2= np.genfromtxt(path3, delimiter=",")
+            lines = fileReader(path1)
+            for ind,itm in enumerate(lines):
+                if itm.startswith('*Material') and itm.endswith('name=MENISCAL_MEN\n'):
+                    tt = np.array([lines[ind+2].strip("\n")])
+                    new = np.hstack([tt,dat1[-1],dat2[-1]])
+                    data.append(new)
+        except:
+            continue
+            
 with open(resultsFile,"a+") as datFile:
-    datFile.writelines(data)
+    for itm in data:
+        datFile.writelines(itm.tolist()+"\n")
+
+# ### Test
+    
+# import ParamTools as par
+# import numpy as np
+# x = np.array([0.01,0.01,184.613,0.01,0.01,0.01,0.005,1,1])
+# par.material_stability(x)
+    
