@@ -12,8 +12,8 @@ v2 = .15:.05:.5;
 ptmatrix = [X(:),Y(:)];
 tpoints = CustomStartPointSet(ptmatrix);
 % Previous Uncomment to use lsqnonlin and fmincon
-algo ='levenberg-marquardt'; % 'trust-region-reflective';
-options = optimoptions(@lsqnonlin,'Algorithm',algo); 
+algo ='interior-point';%levenberg-marquardt'; % 'trust-region-reflective';
+options = optimoptions(@fmincon,'Algorithm',algo); 
 % optimoptions(@fmincon,'Algorithm','interior-point');
 options.PlotFcns = 'optimplotresnorm'; %  'optimplotfirstorderopt'
 options.UseParallel = false;
