@@ -17,11 +17,16 @@
 % plotyy(E_Fval(1:i,1),E_Fval(1:i,2),E_Fval(1:i,1),E_Fval(1:i,3),'scatter');
 
 %% Write solutions to file
-new = zeros(size(solutions,2),10);
+new = zeros(size(solutions,2),3);
 for i=1:size(solutions,2)
-%     solutions(1,i).X
     new(i,:) = [solutions(1,i).Fval,solutions(1, i).X];
 end
 act = [0,20,10,50,0.3,0.2,0.2,4.7115,1.4583,1.4583];
 new=[act;new];
 writematrix(new,"optimised.txt")
+
+options = optimoptions('particleswarm', ...
+    'SwarmSize', 5, ...  % Number of particles in the swarm
+    'HybridFcn', @fmincon);  % Use fmincon for local refinement
+[x, fval, exitflag, output] = particleswarm(fun, lb, ub, options);
+

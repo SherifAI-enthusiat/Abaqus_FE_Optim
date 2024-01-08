@@ -34,15 +34,19 @@
 #     test = par.material_stability(lst) and par.transverseIso(lst)
 #     print(test)
 
-from scipy.io import savemat
-import numpy as np
-import os
-def testMat():
-    workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_2\feaResults.ascii"
-    # outputName = os.path.join(workspacePath,"feaResults.ascii")
-    dat= np.genfromtxt(workspacePath, delimiter=",")
-    # mdic = {"dat": dat, "label": "experiment"}
-    mdic = {"dat": dat}
-    # output = os.path.join(MatlabOutput,"output_%s.mat"%(Mcount))
-    # savemat(output, mdic)
-    return mdic
+# from scipy.io import savemat
+# import numpy as np
+# import os
+# def testMat():
+#     workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_2\feaResults.ascii"
+#     # outputName = os.path.join(workspacePath,"feaResults.ascii")
+#     dat= np.genfromtxt(workspacePath, delimiter=",")
+#     # mdic = {"dat": dat, "label": "experiment"}
+#     mdic = {"dat": dat}
+#     # output = os.path.join(MatlabOutput,"output_%s.mat"%(Mcount))
+#     # savemat(output, mdic)
+#     return mdic
+
+import time,random
+count = str(time.time()).split('.')[1] + str(random.randint(0,10000))
+print(count)
