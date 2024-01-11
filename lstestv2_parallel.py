@@ -45,17 +45,17 @@ def Abqfunc(x,orifile,workspacePath):
         HelperFunc.removefiles(0,workspacePath)
     
     ## PostProcessing - I want to use queues to manage where results go    
-    if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
-        os.chdir(basePath)
-        commandn = r'%s -- "%s"'%(command,workspacePath)
-        pCall2 = subprocess.call(commandn, shell=True)
-        outputName = os.path.join(workspacePath,"feaResults.ascii")
-        if os.path.exists(outputName):
-            dat= np.genfromtxt(outputName, delimiter=",")
-        else:
-            dat = np.zeros([4,12])
-        output = os.path.join("MatlabOutput","output_%s.mat"%(Mcount))
-        savemat(output,{"dat": dat})
+    # if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+    os.chdir(basePath)
+    commandn = r'%s -- "%s"'%(command,workspacePath)
+    pCall2 = subprocess.call(commandn, shell=True)
+    outputName = os.path.join(workspacePath,"feaResults.ascii")
+    if os.path.exists(outputName):
+        dat= np.genfromtxt(outputName, delimiter=",")
+    else:
+        dat = np.zeros([4,12])
+    output = os.path.join("MatlabOutput","output_%s.mat"%(Mcount))
+    savemat(output,{"dat": dat})
     return dat
 # ## Run script
 # x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks

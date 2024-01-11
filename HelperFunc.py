@@ -1,4 +1,5 @@
-import os,sys
+import os,time
+import random
 import glob
 from tkinter import messagebox
 import psutil, shutil
@@ -93,13 +94,13 @@ def display(data):
 
 ## Build working directory path and variable for matlab
 def communicate():
-    key =True; count=0
-    while key:
-        count+=1
-        workspacePath = os.path.join(runDir,"workspace_%s"%(count))#inp3
-        if not os.path.isdir(workspacePath):
-            os.mkdir(workspacePath)
-            key=False
+    # key =True; count=0
+    # while key:
+    #     count+=1
+    count = str(time.time()).split('.')[1] + str(random.randint(0,10000))
+    workspacePath = os.path.join(runDir,"workspace_%s"%(count))#inp3
+    if not os.path.isdir(workspacePath):
+        os.mkdir(workspacePath)
     return workspacePath,count
 
 ## The aim of this function is to check and ensure everything is in order before starting the optimisation
