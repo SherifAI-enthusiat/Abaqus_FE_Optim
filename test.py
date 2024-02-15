@@ -102,23 +102,55 @@
 #     HelperFunc.write2matlab(dat,workspacePath)
 
 
-#### 
+# #### 
+# import os
+# def fileReader(filePath,cpPath=None):
+#     dataFile = open(filePath,"r")
+#     lines = dataFile.readlines()
+#     dataFile.close()
+#     if cpPath!=None:
+#         newmsgfile = open(cpPath,"w")
+#         for line in lines:
+#             newmsgfile.writelines(line)
+#     return lines
+# absPath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
+# workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.odb"
+# OdbqueFile = os.path.join(absPath,"OdbQueue.ascii")
+# item2test = fileReader(OdbqueFile)[-1]
+# if item2test == workspacePath:
+#     test = True
+# else:  test = False
+# import os, numpy as np
+# import subprocess
+# import pickle
+# workspacePath = "runDir/workspace_1"
+# # outputName = os.path.join(workspacePath,"feaResults.ascii")
+# # if os.path.exists(outputName):
+# #     dat= np.genfromtxt(outputName, delimiter=",")
+
+# ## Abaqus version
+# # basePath =os.getcwd()
+# # dataRet = os.path.join(basePath,"dataRetrieval.py")
+# # command = 'abaqus python "%s"'%dataRet
+# # commandn = r'%s -- "%s"'%(command,workspacePath)
+# # pCall2 = subprocess.Popen(commandn, shell= True, stdout=subprocess.PIPE, text=True)
+
+# ## Test script version
+# pCall2 = subprocess.Popen(['python',"newScript.py"],stdout=subprocess.PIPE, text=False)
+# path = workspacePath + '/data.npy'
+# data = np.load(path)
+# print(data)
+# # output, _ = pCall2.communicate()
+# # ## Testing pickle
+# # y = pickle.loads(output)
+# # print(y)
+# # # tmp = pickle.dumps()
+# # # print(tmp) 
+import write2InpFile
+import numpy as np
 import os
-def fileReader(filePath,cpPath=None):
-    dataFile = open(filePath,"r")
-    lines = dataFile.readlines()
-    dataFile.close()
-    if cpPath!=None:
-        newmsgfile = open(cpPath,"w")
-        for line in lines:
-            newmsgfile.writelines(line)
-    return lines
-absPath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
-workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.odb"
-OdbqueFile = os.path.join(absPath,"OdbQueue.ascii")
-item2test = fileReader(OdbqueFile)[-1]
-if item2test == workspacePath:
-    test = True
-else:  test = False
-
-
+basePath =os.getcwd()
+x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) 
+orifile = os.path.join(basePath,"TestJob-2.inp")
+workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_1"
+workspaceInp = write2InpFile.writeInp(x0,orifile,workspacePath,"TestJob-2.inp")

@@ -23,13 +23,13 @@ def writeInp(x,orifile,workspacePath,inpName):
             cr1 =item.split("-")[1]=="A"; cr2 = item.split("-")[1]=="B"; cr3 = item.split("-")[1]=="C"; cr4 = item.split("-")[1]=="D"
             if cr1 or cr2 or cr3 or cr4:
                 data['spring_locs'].append(ind+2)
-        elif item.startswith('*Material') and item.endswith('name=MENISCAL_MEN\n'):
+        elif item.startswith('*Material') and item.endswith('PM_MENISCAL_MEN\n'):
             data['menisci_locs'].append(ind+2)
 
     # Writing to new .INP file
     data['combined'] = data['spring_locs']+data['menisci_locs']
-    if not os.path.exists(workspacePath):
-        os.makedirs(workspacePath)
+    # if not os.path.exists(workspacePath):
+    #     os.makedirs(workspacePath)
     with open(workspaceInp,"w") as file2write:
         for ind,item in enumerate(lines):
             if ind in data['combined']:
