@@ -34,7 +34,7 @@
 #     print(test)
 
 ## Test to determine if stafile is the reason for failure to read results
-# stafile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_100\genOdb_100.sta"
+# stafile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\RunDir\workspace_100\genOdb_100.sta"
 # basePath = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
 # while not os.path.exists(stafile):
 #     print("Works")
@@ -49,9 +49,9 @@
 # import subprocess
 # import time
 # import numpy as np
-# workspacePath = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1"
+# workspacePath = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\RunDir\workspace_1"
 # basePath = os.getcwd()
-# staFile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.sta"
+# staFile = r"D:\Sherif_CT_Download\github\Abaqus_FE_Optim\RunDir\workspace_1\genOdb_1.sta"
 # dataRet = os.path.join(basePath,"dataRetrieval.py")
 # command = 'abaqus python "%s"'%dataRet
 # dat = np.zeros([4,12])
@@ -114,7 +114,7 @@
 #             newmsgfile.writelines(line)
 #     return lines
 # absPath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim"
-# workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\runDir\workspace_1\genOdb_1.odb"
+# workspacePath = "D:\Sherif_CT_Download\github\Abaqus_FE_Optim\RunDir\workspace_1\genOdb_1.odb"
 # OdbqueFile = os.path.join(absPath,"OdbQueue.ascii")
 # item2test = fileReader(OdbqueFile)[-1]
 # if item2test == workspacePath:
@@ -123,7 +123,7 @@
 # import os, numpy as np
 # import subprocess
 # import pickle
-# workspacePath = "runDir/workspace_1"
+# workspacePath = "RunDir/workspace_1"
 # # outputName = os.path.join(workspacePath,"feaResults.ascii")
 # # if os.path.exists(outputName):
 # #     dat= np.genfromtxt(outputName, delimiter=",")
@@ -150,7 +150,11 @@ import write2InpFile
 import numpy as np
 import os
 basePath =os.getcwd()
-x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) 
-orifile = os.path.join(basePath,"TestJob-2.inp")
-workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_1"
-workspaceInp = write2InpFile.writeInp(x0,orifile,workspacePath,"TestJob-2.inp")
+# x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) 
+# orifile = os.path.join(basePath,"TestJob-2.inp")
+workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\RunDir\workspace_1"
+# workspaceInp = write2InpFile.writeInp(x0,orifile,workspacePath,"TestJob-2.inp")
+latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
+test = os.path.dirname(latEpiCoordPath)
+
+# os.makedirs(latEpiCoordPath)

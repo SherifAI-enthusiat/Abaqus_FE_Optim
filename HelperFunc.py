@@ -14,7 +14,7 @@ os.chdir(basePath)
 MatlabOutput = os.path.join(basePath,"MatlabOutput")
 queFile = os.path.join(basePath,"WorkQueue.ascii")
 OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
-runDir = os.path.join(basePath,"runDir")
+RunDir = os.path.join(basePath,"RunDir")
 
 def write2File(outFile,dictn1):
     with open(outFile,'a') as datFile_1:
@@ -98,7 +98,7 @@ def communicate():
     # while key:
     #     count+=1
     count = str(time.time()).split('.')[1] + str(random.randint(0,10000))
-    workspacePath = os.path.join(runDir,"workspace_%s"%(count))#inp3
+    workspacePath = os.path.join(RunDir,"workspace_%s"%(count))#inp3
     if not os.path.isdir(workspacePath):
         os.mkdir(workspacePath)
     return workspacePath,count
@@ -106,7 +106,7 @@ def communicate():
 ## The aim of this function is to check and ensure everything is in order before starting the optimisation
 # This includes deleting workspace_%d folders, clearing out WorkQueue.ascii file.
 def initialise():
-    workspacePaths = glob.glob(os.path.join(runDir,"workspace_*"))#inp3
+    workspacePaths = glob.glob(os.path.join(RunDir,"workspace_*"))#inp3
     output = glob.glob(os.path.join(MatlabOutput,"output_*.mat"))
     queFile = [os.path.join(basePath,"WorkQueue.ascii")]
     debugFile = [os.path.join(basePath,"debugReport.ascii")]

@@ -10,8 +10,9 @@ function [outputn] = myscript(x)
     if py.ParamTools.material_stability(x)
         formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d';%% This is where I can change bits.
         cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9)); % 
-        [~,data]= pyrunfile(cmd,["Mcount","data"]);
-        
+%         [~, workspacePath]= pyrunfile(cmd,["Mcount"," workspacePath"]);
+        workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
+        data = measureMenisci(workspacePath);
     else
         data = zeros(4,12);
     end

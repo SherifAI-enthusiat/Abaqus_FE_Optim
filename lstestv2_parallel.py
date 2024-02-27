@@ -2,9 +2,8 @@
 # from scipy.optimize import minimize
 from scipy.io import savemat
 import numpy as np
-import subprocess,os
+import subprocess,os,sys
 import time
-import pickle
 # import pathlib2 as pth
 import write2InpFile
 import HelperFunc
@@ -50,29 +49,30 @@ def Abqfunc(x,orifile,workspacePath):
     os.chdir(basePath)
     commandn = r'%s -- "%s"'%(command,workspacePath)
     pCall2 = subprocess.run(commandn, shell= True, capture_output=True, text=True)
-    outputName = os.path.join(workspacePath,"feaResults.npy")
-    try:
-        dat= np.load(outputName)
-    except:
-        dat = np.zeros([4,12])
-    output = os.path.join("MatlabOutput","output_%s.mat"%(Mcount))
-    savemat(output,{"dat": dat})
-    return dat
+    # outputName = os.path.join(workspacePath,"feaResults.npy")
+    # try:
+    #     dat= np.load(outputName)
+    # except:
+    #     dat = np.zeros([4,12])
+    # output = os.path.join("MatlabOutput","output_%s.mat"%(Mcount))
+    # savemat(output,{"dat": dat})
+    # return dat
+    return workspacePath
 ## Run script
-x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks
-inp3 = 1
-Mcount = 1  # this is required to test the file without matlab
-runDir = os.path.join(basePath,"runDir")
-workspacePath = os.path.join(runDir,"workspace_%s"%(inp3))#inp3
-data = Abqfunc(x0,orifile,workspacePath)
+# x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) # {6.673, 6.673, 229.25, 0.01, 0.01, 0.01, 3.304, 12.6,12.6 } Breaks
+# inp3 = 1
+# Mcount = 1  # this is required to test the file without matlab
+# RunDir = os.path.join(basePath,"RunDir")
+# workspacePath = os.path.join(RunDir,"workspace_%s"%(inp3))#inp3
+# workspacePath = Abqfunc(x0,orifile,workspacePath)
 
-# ## Matlab version
-# dictn =[]
-# for i in range(1,len(sys.argv)):
-#     dictn.append(sys.argv[i])
-# x0 =np.hstack([dictn])
-# workspacePath,Mcount=HelperFunc.communicate()
-# data = Abqfunc(x0,orifile,workspacePath)
+## Matlab version
+dictn =[]
+for i in range(1,len(sys.argv)):
+    dictn.append(sys.argv[i])
+x0 =np.hstack([dictn])
+workspacePath,Mcount=HelperFunc.communicate()
+data = Abqfunc(x0,orifile,workspacePath)
 # # try:
 # #     shutil.rmtree(workspacePath)
 # # except:

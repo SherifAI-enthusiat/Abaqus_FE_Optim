@@ -27,6 +27,12 @@
 % writematrix(new,"optimised.txt")
 
 %% Testing python run functions
-if py.ParamTools.material_stability(x)
-    sprintf("Yes")
+% if py.ParamTools.material_stability(x)
+%     sprintf("Yes")
+% end
+figure(3)
+hold on
+for it=1:4
+    step =[Obj.defCoords(it).med;Obj.defCoords(it).lat];
+    scatter3(step(:,1),step(:,2),step(:,3));
 end

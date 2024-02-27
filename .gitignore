@@ -1,6 +1,7 @@
 /MatlabOutput/Figures
 /MatlabOutput/output_*.mat
-/runDir/workspace_*
+/MatlabOutput/*.txt
+/RunDir/workspace_*
 /Other/testJob.*
 /Other/testPinch2.inp
 /Outcomes/Previous
