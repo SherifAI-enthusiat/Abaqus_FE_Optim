@@ -146,15 +146,21 @@
 # # print(y)
 # # # tmp = pickle.dumps()
 # # # print(tmp) 
-import write2InpFile
-import numpy as np
-import os
-basePath =os.getcwd()
-# x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) 
-# orifile = os.path.join(basePath,"TestJob-2.inp")
-workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\RunDir\workspace_1"
-# workspaceInp = write2InpFile.writeInp(x0,orifile,workspacePath,"TestJob-2.inp")
-latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
-test = os.path.dirname(latEpiCoordPath)
+# import write2InpFile
+# import numpy as np
+# import os
+# basePath =os.getcwd()
+# # x0 = np.array([3.5,3.5,3.5,0.2,0.2,0.2,1.4583,1.4583,1.4583]) 
+# # orifile = os.path.join(basePath,"TestJob-2.inp")
+# workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\RunDir\workspace_1"
+# # workspaceInp = write2InpFile.writeInp(x0,orifile,workspacePath,"TestJob-2.inp")
+# latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
+# test = os.path.dirname(latEpiCoordPath)
 
 # os.makedirs(latEpiCoordPath)
+# kneeName = 'knee 2'
+# somVa = 'PC'+ kneeName.replace(' ','')
+# print(somVa)
+from HelperFunc import *
+# lines = fileReader("TestJob-2.inp")
+val = checkInpfile('Knee 2')

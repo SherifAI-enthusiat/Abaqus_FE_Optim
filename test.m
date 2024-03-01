@@ -30,9 +30,44 @@
 % if py.ParamTools.material_stability(x)
 %     sprintf("Yes")
 % end
-figure(3)
-hold on
-for it=1:4
-    step =[Obj.defCoords(it).med;Obj.defCoords(it).lat];
-    scatter3(step(:,1),step(:,2),step(:,3));
-end
+
+% Measured coordinates on rigid component after a given state
+% state1 = [52.74, 70.32, 42.78; 40.73, 73.25, 44.83];
+% state2 = [52.74, 72.664, 43.95; 40.73, 75.594, 46.29];
+% state3 = [49.517, 72.957, 45.708; 37.211, 74.422, 47.759];
+% state4 = [53.326, 74.129, 46.001; 41.313, 77.938, 48.052];
+% state5 = [52.739999999999995,70.32,42.778;40.727,73.25,44.829];
+
+
+% What coordinate transformation maps coords1 to coords2? 
+coords1 = [35.452999999999996,44.829,47.759 ;45.415,46.879999999999995,46.586999999999996] ;
+coords2 = [54.75,84.3,43.05; 43.5,87.0,44.4];
+
+% Define the new set of coordinates
+coords3 = [47.172999999999995,79.11,39.262];
+% Perform Procrustes analysis
+[d, Z, transform] = procrustes(coords1', coords2');
+
+% d is the Procrustes distance (a measure of the dissimilarity between the two sets)
+% Z is the transformed coordinates of coords1 that best align with coords2
+% transform is the transformation information (scaling, rotation, translation)
+
+% Extract rotation matrix, translation vector, and scaling factor
+R = transform.T;
+t = transform.c(1, :);
+s = transform.b;
+
+% Display the results
+disp('Rotation Matrix:');
+disp(R);
+disp('Translation Vector:');
+disp(t);
+disp('Scaling Factor:');
+disp(s);
+
+% Apply the Procrustes transformation to coords3
+transformed_coords3 = bsxfun(@plus, s * (R * coords3')', t);
+
+disp('Transformed Coordinates (coords3):');
+disp(transformed_coords3);
+

@@ -11,15 +11,15 @@ problem = {
     'bounds': [[0.01, 20],
                [0.01, 20],
                [1, 250],
-               [0.01, 0.5],
-               [0.01, 0.5],
-               [0.01, 0.5],
+               [0.01],
+               [0.01],
+               [0.01],
                [1, 20],
                [1, 30],
                [1, 30]]}
 # Generating the number of division in bounds
 # ndiv = 16 # This is the number of divisions I want to have
-newndiv = [4,4,25,5,5,5,6,6,6] 
+newndiv = [5,5,25,1,1,1,6,6,6] 
 
 # Filter using transverse Isotropic and Material stability 
 def filter(X,keyword):
@@ -41,4 +41,4 @@ iterm = par.ParamGenerator(problem,newndiv)
 
 #
 for ind,X in enumerate(par.iter_tools(*iterm)):
-	filter(X,"ortho")
+	filter(X,"trans")

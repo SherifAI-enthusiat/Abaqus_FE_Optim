@@ -1,18 +1,93 @@
 classdef myFunctions
     properties
-        parameters;
-        sfM;
-        X_conv;
-        oriCoords;
-        med_men_length;
-        defCoords; % This is used to store the resultant coords.
-        revCentres; % These are the new tibial centres for measurement purposes
-        results; % Results of measured displace
-        axes;
+        parameters; % these are parameters used to determine a cylinder.
+        sfM; % this approx surface data.
+        X_conv; % 
+        oriCoords; % These are teh original coordinates collected from Abaqus - these are undeformed coordinates.
+        med_men_length; % This is dimension length of the medial mesh from Matlab
+        defCoords; % This is used to store the resultant coords for all load cases.
+        revCentres; % These are the new tibial centres for measurement purposes.
+        results; % Results of measured displacements.
+        axes; % these are variables from ScanIP for making measurements in MATLAB.
+        pixelConv; % This is data from ScanIP i.e. convertion factor from pixel to length(mm).
     end 
 
-%% Plotting my points
     methods
+        %% Cost function for the optimissation - this function handles everything
+        function [outputn] = myscript(obj,x)
+        % This function evaluates in Abaqus and returns a variable "count" which is
+        % used to locate the results file.
+            vp = .01; vf_p = .01;
+            Gp = x(1)/(2*(1+vp)); % Gp
+            x = [x(1),x(1),x(2),vp,vf_p,vf_p,Gp,x(3),x(3)];
+        %     scalarM = 100.*ones(size(expData));
+            ff = fullfile('MatlabOutput',{'expData.mat'});
+            load(string(ff(1)));  
+            if py.ParamTools.material_stability(x)
+                formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d';%% This is where I can change bits.
+                cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9)); % 
+        %         [~, workspacePath]= pyrunfile(cmd,["Mcount"," workspacePath"]);
+                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
+                data = obj.measureMenisci(workspacePath);
+            else
+                data = zeros(4,12);
+            end
+            outputn = obj.errorfunc(double(data),expData);
+        end
+        %% This function handles the secondary aspect of the optimisation
+        function measuredDisplacements = measureMenisci(obj,path)
+            % This script collects the radial displacements of the menisci with respect two points at approx. centre of either tibial compartment.
+            %% To - Do 
+            % ------  Input required for optimisation
+            % Need medial and lateral coordinate data - Done
+            % Need medial and lateral displacement data - Done
+            % Need tibial epicondyle location data - Done
+            % Need axis data and location of derived - Done
+            % Need path for finding results - Done
+            % fig1 = figure(1); oriAx = axes;
+            %% Undeformed and displacement data
+            fp_coords = fullfile("MatlabOutput",["medCoordData.txt";"latCoordData.txt";"expData.mat"]);
+            fp_disp = fullfile(path+"\Results",['medDisplData.txt';"latDisplData.txt";"medEpiCoordData.txt";"latEpiCoordData.txt"]);
+            med_men = readmatrix(string(fp_coords(1)));lat_men = readmatrix(string(fp_coords(2)));
+            med_men_displ = readmatrix(string(fp_disp(1)));lat_men_displ = readmatrix(string(fp_disp(2)));
+            medEpiCoord = readmatrix(string(fp_disp(3)));latEpiCoord = readmatrix(string(fp_disp(4)));
+            load(string(fp_coords(3)));
+            % Undeformed data - Move step is applied to bring it to the undeformed technically. 
+            % Since Abaqus has issues with surfaces in contact. So i have to rearrange the data into four load steps and added the Move step load case to coord data.
+            %% This piece of code determines the axis on which the menisci lies - 
+            % Obj = myFunctions();
+            obj.oriCoords = vertcat(med_men,lat_men);
+            obj.med_men_length = size(med_men,1); 
+            displ = vertcat(med_men_displ,lat_men_displ);
+            % axisSI= obj.determineSI_Dir(); % Determines the horizontal plane within the coordinates
+            % axisAP = obj.determineAP_Dir(); % This is experimental - i need to check that it works for all cases.
+            % axes = [axisSI,axisAP];
+            %% This piece of code determines the location of the menisci points for measurements.
+            tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
+            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,obj.axes);
+            %% I am here - Need to verify that points around the menisci are at the right location.
+            % relative to surface from Abaqus. i then need to check resultant coords and measure points.
+            %% FindPointsInCylinder function
+            [measuredDisplacements,obj] = obj.EstimateMenisciDisplacements(Points2Measure,displ);
+            %% Examine the output from processing.
+            % figure(3)
+            % hold on
+            % for it=1:4
+            %     step =[Obj.defCoords(it).med;Obj.defCoords(it).lat];
+            %     scatter3(step(:,1),step(:,2),step(:,3));
+            % end
+        end
+        %% Cost function for optimisation
+        function result = errorfunc(obj,data,expData,dir)
+            temp = 100*(data(1:end,:)-expData)./expData; % .*scalarM TO DO need to check dimensions here.
+            temp = temp.^2;
+            if exist("dir",'var')
+                result = sum(temp,dir);
+            else
+                result = sum(temp,'all'); 
+            end
+        end
+        %% For storing variables
         function obj = variables(obj,parameters,sfM,varargin)
             if ~isempty(varargin)
                 obj.X_conv = varargin{1};
@@ -91,7 +166,7 @@ classdef myFunctions
     function [interData,cyl_model,obj] = cylinderIntersect(obj,parameters,testData) 
             % close all % This is important because I use the figure to obtain the point hence only figure here is kept.
             cyl_model = cylinderModel(parameters);
-            [X, Y, Z] = cylinder(cyl_model.Radius, 100);
+            [X, Y, Z] = cylinder(parameters(7), 100);
             [X, Y, Z] = obj.transformCylinder(cyl_model,X, Y, Z);
             % Separating into bottom and top circle making the cylinder.
             X1 = X(1,:); X2 = X(2,:); 
@@ -102,32 +177,35 @@ classdef myFunctions
             t = linspace(0,1,100); 
             % fig2 = openfig('InitialMenisci.fig');
             % set(0, 'CurrentFigure', fig2);
-            fig2 = figure(2); ax1 = axes;
-            hold(ax1,"on") % If require we can assign axes and plot in specifc figure
+            newTable = [];
+            % fig2 = figure(2); ax1 = axes; 
+            % hold(ax1,"on") % If require we can assign axes and plot in specifc figure
             for i=1:size(D1,1)
                 NewC = D1(i,:) + t'.*dirVec(i,:);
-                plot3(NewC(:,1),NewC(:,2),NewC(:,3),"ks")  % This plot is in essense used to store and retrieve data
+                newTable = [newTable,NewC'];
+                % plot3(NewC(:,1),NewC(:,2),NewC(:,3),"ks")  % This plot is in essense used to store and retrieve data
             end 
             
             AxisD = parameters(1:3) + t'.*dirVec(1,:); % dirVec(i,:) any direction here is // to cyl axis
-            plot3(ax1,AxisD(:,1),AxisD(:,2),AxisD(:,3),"rs")
-            hold(ax1,"off")
-            set(0, 'CurrentFigure', fig2); h = gcf;  %current figure handle
-            axesObjs = get(h, 'Children');  %axes handles
-            dataObjs = get(axesObjs, 'Children'); 
-            xdata = get(dataObjs, 'XData'); 
-            ydata = get(dataObjs, 'YData');
-            zdata = get(dataObjs, 'ZData');
-            cyl_data =[]; [a,~] = size(xdata);
-            for i=1:a
-                nX = xdata{i,1}';nY = ydata{i,1}';nZ = zdata{i,1}';
-                tmp = [nX,nY,nZ];
-                cyl_data = [cyl_data;tmp];
-            end
-            shp = alphaShape(cyl_data,parameters(7));
+            newTable = [newTable,AxisD'];
+            % plot3(ax1,AxisD(:,1),AxisD(:,2),AxisD(:,3),"rs")
+            % hold(ax1,"off")
+            % set(0, 'CurrentFigure', fig2); h = gcf;  %current figure handle
+            % axesObjs = get(h, 'Children');  %axes handles
+            % dataObjs = get(axesObjs, 'Children'); 
+            % xdata = get(dataObjs, 'XData'); 
+            % ydata = get(dataObjs, 'YData');
+            % zdata = get(dataObjs, 'ZData');
+            % cyl_data =[]; [a,~] = size(xdata);
+            % for i=1:a
+            %     nX = xdata{i,1}';nY = ydata{i,1}';nZ = zdata{i,1}';
+            %     tmp = [nX,nY,nZ];
+            %     cyl_data = [cyl_data;tmp];
+            % end
+            shp = alphaShape(newTable',parameters(7));
             indices = inShape(shp,testData);
             interData = testData(indices,:);
-            close(fig2)
+            % close(fig2)
     end
 
     function [sfM,sfM_G,obj] = fitmySurface(obj,data) 
@@ -140,7 +218,7 @@ classdef myFunctions
         obj.sfM = sfM;
     end
 
-    function res_Z = errorFunc(obj,t)
+    function res_Z = errorFunc_Surf(obj,t)
         % Function to minimise
         sfM = obj.sfM; p = obj.parameters;
         Dir = p(4:6) - p(1:3);
@@ -167,18 +245,18 @@ classdef myFunctions
         end
     end
     
-    function [axis,tt] = determineSI_Dir(obj)
-        % This is used to determine the axial orientation i.e. This is used to determine the Superior - Inferior axis 
-        pcData = pointCloud(obj.oriCoords);
-        tt = pcfitplane(pcData,5);
-        [~,axis] = max(abs(tt.Normal));
-    end
-
-    function [AP_Dir] = determineAP_Dir(obj)
-        % To-DO. This is used to determine the AP direction for my knee - might not be true though. Need to check for all knees 
-        valA = sum(pca(obj.oriCoords));
-        [~,AP_Dir] = max(valA);
-    end
+    % function [axis,tt] = determineSI_Dir(obj)
+    %     % This is used to determine the axial orientation i.e. This is used to determine the Superior - Inferior axis 
+    %     pcData = pointCloud(obj.oriCoords);
+    %     tt = pcfitplane(pcData,5);
+    %     [~,axis] = max(abs(tt.Normal));
+    % end
+    % 
+    % function [AP_Dir] = determineAP_Dir(obj)
+    %     % To-DO. This is used to determine the AP direction for my knee - might not be true though. Need to check for all knees 
+    %     valA = sum(pca(obj.oriCoords));
+    %     [~,AP_Dir] = max(valA);
+    % end
     
     function [tibiaEpiCoords] = calcTibiaFeatures(obj,medCoords,latCoords) %% - Done
         for i = 1:size(medCoords,1)-1
@@ -189,8 +267,8 @@ classdef myFunctions
 
     function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,planeHeight,axes) % To - Do
         %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results and for optimisation purposes.
-        pixelConv = 0.15;
-        ScalarA = 1.0; ScalarB = 1.5; ScalarC = 2.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
+        % pixelConv = 0.15;
+        ScalarA = 1.0; ScalarB = 1.5; ScalarC = 3.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
         D_vec = tibiaEpiCoords.lat(:,:) - tibiaEpiCoords.med(:,:); % This determines the points on the tibial plateaux that I measure bits from.
         [a,~] = size(D_vec);
         tes = obj.generatePoints(70,6); % these are defined constants in ScanIP
@@ -214,9 +292,9 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            newcoord(:,SI_Dir)= pixelConv*planeHeight(it); % this ".293" is the pixel resolution to convert to pixel height.
-            newCentre(it).med(1,SI_Dir) = pixelConv*planeHeight(it); 
-            newCentre(it).lat(1,SI_Dir) = pixelConv*planeHeight(it);
+            newcoord(:,SI_Dir)= obj.pixelConv*planeHeight(it); % this ".293" is the pixel resolution to convert to pixel height.
+            newCentre(it).med(1,SI_Dir) = obj.pixelConv*planeHeight(it); 
+            newCentre(it).lat(1,SI_Dir) = obj.pixelConv*planeHeight(it);
             Points2Measure(it).step = newcoord; 
         end
     end
@@ -236,7 +314,7 @@ classdef myFunctions
     end
 
     function [results, obj] = EstimateMenisciDisplacements(obj,Points2Measure,displacements)
-        cyl_rad =1; % this will be modified until suitable value is found{Verify by plotting}
+        cyl_rad =1.5; % this will be modified until suitable value is found{Verify by plotting}
         obj.defCoords = obj.ResultantCoordinates(displacements); % These are the coordinates after displacements 
         ltn = ["med_men","lat_men"]; % Separates the data into lateral and medial
         nlt = ["trp(1:6,:)","trp(7:12,:)"];  % These are the points plotted around the periphery of the menisci
@@ -251,20 +329,20 @@ classdef myFunctions
                 for i=1:6  %% To-Do -> I believe that the plot is causing the problem.
                     % dirVec = trpn(i,:) - revCoords(j,:);
                     parameters = [revCoords(j,:),trpn(i,:),cyl_rad];
-                    cyl_mod = cylinderModel(parameters);
+                    % cyl_mod = cylinderModel(parameters);
                     % plot(cyl_mod); legend("AutoUpdate","off")
                     % Generating and checking values that intersect with the cylinder
-                    IntData = obj.cylinderIntersect(parameters,data);
+                    [IntData,cyl_mod] = obj.cylinderIntersect(parameters,data);
                     % plot3(oriAx,IntData(:,1),IntData(:,2),IntData(:,3),"yo","DisplayName","Measure surface")
                     % legend('AutoUpdate', 'off')
                     % Fit surface and find intersect with cylinder axis
                     if size(IntData,1)>=9
                         sfM = obj.fitmySurface(IntData);
                         obj = obj.variables(parameters,sfM);
-                        Con_X = fsolve(@obj.errorFunc,1);
+                        Con_X = fsolve(@obj.errorFunc_Surf,1);
                         [point,pltM]= obj.measuredPoint(Con_X,IntData);
                     else
-                        point = mean(IntData); %[Solve for t == Con_X] this is the case where there is not enough data for data fitting.
+                        point = mean(IntData,1); %[Solve for t == Con_X] this is the case where there is not enough data for data fitting.
                         pltM = "rs"; % These are approximate solutions.
                     end
                     measuredCoords = [measuredCoords;point];
@@ -292,6 +370,25 @@ classdef myFunctions
             displacements(it,:)=[obj.results(it).medDispl;obj.results(it).latDispl]';
         end
     end
+
+    function [obj] = collectkneeDetails(obj,kneeName)
+        test = upper(kneeName);
+        if test == "KNEE 2"
+            obj.axes = [3,2];
+            obj.pixelConv = .15;
+        elseif test == "KNEE 4"
+            obj.axes = [3,2];
+            obj.pixelConv = .293;
+        elseif test == "KNEE 5"
+            obj.axes = [2,3];
+            obj.pixelConv = .293;
+        end
+        val = py.HelperFunc.checkInpfile(kneeName);
+        if val == 0
+            error("Ensure the right Abaqus file i.e .inp file is in the root directory")
+        end
+    end
+
 end
 end
 

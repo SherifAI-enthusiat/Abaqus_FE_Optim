@@ -16,6 +16,17 @@ queFile = os.path.join(basePath,"WorkQueue.ascii")
 OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
 RunDir = os.path.join(basePath,"RunDir")
 
+def checkInpfile(kneeName):
+    lines = fileReader("TestJob-2.inp")
+    it =0; value = False
+    for it,val in enumerate(lines):
+        if val.startswith('** Job name:'):
+            var = 'PC'+kneeName.replace(' ','')
+            if var in val:
+                value = True
+                break
+    return value
+
 def write2File(outFile,dictn1):
     with open(outFile,'a') as datFile_1:
         tempN1= np.array([dictn1]); #tempN2= np.vstack(dictn2)

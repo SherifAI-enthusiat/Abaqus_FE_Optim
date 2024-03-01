@@ -18,7 +18,7 @@ function measuredDisplacements = measureMenisci(path)
     % Undeformed data - Move step is applied to bring it to the undeformed technically. 
     % Since Abaqus has issues with surfaces in contact. So i have to rearrange the data into four load steps and added the Move step load case to coord data.
     %% This piece of code determines the axis on which the menisci lies - 
-    Obj = myFunctions();
+    % Obj = myFunctions();
     Obj.oriCoords = vertcat(med_men,lat_men);
     Obj.med_men_length = size(med_men,1); 
     displ = vertcat(med_men_displ,lat_men_displ);

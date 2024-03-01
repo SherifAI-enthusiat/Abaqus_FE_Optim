@@ -75,7 +75,10 @@ def ParamGenerator(data,num_div):
     # The purpose of this function is to generate some parameters for us
     nlist = {}
     for ind,item in enumerate(data['bounds']):
-        nlist[ind] = np.linspace(item[0],item[1],num_div[ind]) 
+        if len(item)==2:
+            nlist[ind] = np.linspace(item[0],item[1],num_div[ind]) 
+        else:
+            nlist[ind] = np.array([item[0]])
     
     # Form a list for itertool.product()
     temp =[] # Dynamic list container
