@@ -23,7 +23,7 @@ dataRet = os.path.join(basePath,"dataRetrieval.py")
 command = 'abaqus python "%s"'%dataRet
 
 ## Function call
-def Abqfunc(x,orifile,workspacePath):
+def Abqfunc(x,orifile,workspacePath,storePath):
     ## Method required to modify Youngs and Poisson
     os.chdir(basePath)
     check = True; tConst =0
@@ -40,14 +40,14 @@ def Abqfunc(x,orifile,workspacePath):
         while not HelperFunc.isCompleted(staFile,tConst)[0]:
             time.sleep(60)
             tConst+=1
-        if HelperFunc.isCompleted(staFile,tConst)[1]:
-            HelperFunc.kill_proc(jobName)
+        # if HelperFunc.isCompleted(staFile,tConst)[1]:
+        #     HelperFunc.kill_proc(jobName)
         HelperFunc.removefiles(0,workspacePath)
     
     ## PostProcessing - I want to use queues to manage where results go    
     # if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
     os.chdir(basePath)
-    commandn = r'%s -- "%s"'%(command,workspacePath)
+    commandn = r'%s -- "%s %s"'%(command,workspacePath,storePath)
     pCall2 = subprocess.run(commandn, shell= True, capture_output=True, text=True)
     # outputName = os.path.join(workspacePath,"feaResults.npy")
     # try:
@@ -68,11 +68,11 @@ def Abqfunc(x,orifile,workspacePath):
 
 ## Matlab version
 dictn =[]
-for i in range(1,len(sys.argv)):
+for i in range(1,len(sys.argv)-1):
     dictn.append(sys.argv[i])
 x0 =np.hstack([dictn])
 workspacePath,Mcount=HelperFunc.communicate()
-data = Abqfunc(x0,orifile,workspacePath)
+data = Abqfunc(x0,orifile,workspacePath,sys.argv[-1])
 # # try:
 # #     shutil.rmtree(workspacePath)
 # # except:

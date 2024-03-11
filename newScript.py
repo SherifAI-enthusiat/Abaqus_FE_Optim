@@ -91,15 +91,15 @@ def getnodeSet(myOdb,surf):
 
 def RetrieveData():
     odbToolbox = os.path.join(absPath,"postProTools")
-    medCoordPath = os.path.join(absPath,"MatlabOutput\medCoordData.txt")
-    latCoordPath = os.path.join(absPath,"MatlabOutput\latCoordData.txt")
+    medCoordPath = os.path.join(absPath,"MatlabOutput\Knee 5\medCoordData.txt")
+    latCoordPath = os.path.join(absPath,"MatlabOutput\Knee 5\latCoordData.txt")
     medEpiCoordPath = os.path.join(workspacePath,"Results\medEpiCoordData.txt")
     latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
     medDisplPath = os.path.join(workspacePath,"Results\medDisplData.txt")
     latDisplPath = os.path.join(workspacePath,"Results\latDisplData.txt")
     odbFile = os.path.join(workspacePath,"genOdb_%s.odb"%(workspacePath.split("_")[-1]))
     os.mkdir(os.path.dirname(latEpiCoordPath)) # Creates the Results path for my files
-    odbFile = "C:\Temp\knee4_test-v2.odb" # Allows me to test tibia features.
+    odbFile = "C:\Temp\knee5_test_v5.odb" # Allows me to test tibia features.
     sys.path.append(odbToolbox)
     # sys.path.append(ContactTool)
     import tools.odbTools as odbTools

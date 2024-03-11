@@ -18,3 +18,5 @@ debugReport.ascii
 feaAll.ascii
 *.pyc
 *.pyo
+Temp/
+*.asv

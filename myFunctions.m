@@ -10,6 +10,8 @@ classdef myFunctions
         results; % Results of measured displacements.
         axes; % these are variables from ScanIP for making measurements in MATLAB.
         pixelConv; % This is data from ScanIP i.e. convertion factor from pixel to length(mm).
+        path; % Path to experimental data stored.
+        mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
     end 
 
     methods
@@ -21,11 +23,11 @@ classdef myFunctions
             Gp = x(1)/(2*(1+vp)); % Gp
             x = [x(1),x(1),x(2),vp,vf_p,vf_p,Gp,x(3),x(3)];
         %     scalarM = 100.*ones(size(expData));
-            ff = fullfile('MatlabOutput',{'expData.mat'});
+            ff = fullfile(obj.path,{'expData.mat'});
             load(string(ff(1)));  
             if py.ParamTools.material_stability(x)
-                formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d';%% This is where I can change bits.
-                cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9)); % 
+                formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d %s';%% This is where I can change bits.
+                cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
         %         [~, workspacePath]= pyrunfile(cmd,["Mcount"," workspacePath"]);
                 workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
                 data = obj.measureMenisci(workspacePath);
@@ -46,7 +48,7 @@ classdef myFunctions
             % Need path for finding results - Done
             % fig1 = figure(1); oriAx = axes;
             %% Undeformed and displacement data
-            fp_coords = fullfile("MatlabOutput",["medCoordData.txt";"latCoordData.txt";"expData.mat"]);
+            fp_coords = fullfile(obj.path,["medCoordData.txt";"latCoordData.txt";"expData.mat"]);
             fp_disp = fullfile(path+"\Results",['medDisplData.txt';"latDisplData.txt";"medEpiCoordData.txt";"latEpiCoordData.txt"]);
             med_men = readmatrix(string(fp_coords(1)));lat_men = readmatrix(string(fp_coords(2)));
             med_men_displ = readmatrix(string(fp_disp(1)));lat_men_displ = readmatrix(string(fp_disp(2)));
@@ -54,7 +56,7 @@ classdef myFunctions
             load(string(fp_coords(3)));
             % Undeformed data - Move step is applied to bring it to the undeformed technically. 
             % Since Abaqus has issues with surfaces in contact. So i have to rearrange the data into four load steps and added the Move step load case to coord data.
-            %% This piece of code determines the axis on which the menisci lies - 
+            %% This piece of code determines the axis on which the menisci lies - {Doesnt work consistently for all samples hence I decided to ignore it}
             % Obj = myFunctions();
             obj.oriCoords = vertcat(med_men,lat_men);
             obj.med_men_length = size(med_men,1); 
@@ -266,25 +268,38 @@ classdef myFunctions
     end
 
     function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,planeHeight,axes) % To - Do
-        %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results and for optimisation purposes.
-        % pixelConv = 0.15;
+        %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results for optimisation purposes.
         ScalarA = 1.0; ScalarB = 1.5; ScalarC = 3.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
-        D_vec = tibiaEpiCoords.lat(:,:) - tibiaEpiCoords.med(:,:); % This determines the points on the tibial plateaux that I measure bits from.
+        if obj.mnmx == 0 % Default case
+            D_vec = tibiaEpiCoords.lat(:,:) - tibiaEpiCoords.med(:,:); % This determines the points on the tibial plateaux that I measure bits from.
+            lt = ["-","+"];
+        elseif obj.mnmx == 1 % Only occurs for knee 5
+            D_vec = tibiaEpiCoords.med(:,:) - tibiaEpiCoords.lat(:,:);
+            lt = ["+","-"];
+        end
         [a,~] = size(D_vec);
         tes = obj.generatePoints(70,6); % these are defined constants in ScanIP
-        lt = ["-","+"]; Points2Measure = struct();
+        Points2Measure = struct();
         SI_Dir = axes(1); AP_Dir = axes(2);
         for it = 1:a
             % I will use newCentre to calc locations around the periphery of the menisci. The newcentre is calc based on two operations
             % 1. Using the direction vector based on tibial features 2. Modifying location using original tibia centres and translating by some amount.
-            newCentre(it).med = tibiaEpiCoords.med(it,:) - ScalarA*D_vec(it,:);
-            newCentre(it).lat = tibiaEpiCoords.lat(it,:) + ScalarB*D_vec(it,:); 
-            newCentre(it).med(1,AP_Dir) = tibiaEpiCoords.lat(1,AP_Dir);
-            newCentre(it).lat(1,AP_Dir) = tibiaEpiCoords.med(1,AP_Dir) - 6; % This value here "6" is based on definitions I made in ScanIP  
+            if obj.mnmx == 0 % Default case
+                newCentre(it).med = tibiaEpiCoords.med(it,:) - ScalarA*D_vec(it,:);
+                newCentre(it).lat = tibiaEpiCoords.lat(it,:) + ScalarB*D_vec(it,:); 
+                newCentre(it).med(1,AP_Dir) = tibiaEpiCoords.lat(it,AP_Dir);
+                newCentre(it).lat(1,AP_Dir) = tibiaEpiCoords.med(it,AP_Dir) - 6; % This value here "6" is based on definitions I made in ScanIP  
+            elseif obj.mnmx == 1 % Only occurs for knee 5
+                newCentre(it).med = tibiaEpiCoords.med(it,:) + ScalarB*D_vec(it,:);
+                newCentre(it).lat = tibiaEpiCoords.lat(it,:) - ScalarA*D_vec(it,:); 
+                newCentre(it).lat(1,AP_Dir) = tibiaEpiCoords.med(it,AP_Dir); 
+                newCentre(it).med(1,AP_Dir) = tibiaEpiCoords.lat(it,AP_Dir) - 6;
+            end
+
             newCentreA = [newCentre(it).med;newCentre(it).lat];
             DirV = D_vec(it,:).*ones(3,3); newcoord = [];
             for j = 1:2
-                txt = "newCentreA(j,:) " + lt(j) +" dot(tmp,ScalarC*DirV')";
+                txt = "newCentreA(j,:) " + lt(j) +" (tmp*(ScalarC*D_vec(it,:))')'"; % Found that dot product is different in Matlab and Python
                 for i = 1:6
                     tmp = obj.rotationMat(tes(i),SI_Dir);
                     new = eval(txt);
@@ -292,9 +307,10 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            newcoord(:,SI_Dir)= obj.pixelConv*planeHeight(it); % this ".293" is the pixel resolution to convert to pixel height.
-            newCentre(it).med(1,SI_Dir) = obj.pixelConv*planeHeight(it); 
-            newCentre(it).lat(1,SI_Dir) = obj.pixelConv*planeHeight(it);
+            constHeight = obj.pixelConv*planeHeight(it);
+            newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
+            newCentre(it).med(1,SI_Dir) = constHeight; 
+            newCentre(it).lat(1,SI_Dir) = constHeight;
             Points2Measure(it).step = newcoord; 
         end
     end
@@ -304,8 +320,8 @@ classdef myFunctions
         a = obj.med_men_length;
         med_men = obj.oriCoords(1:a,:); lat_men = obj.oriCoords(a+1:end,:); % These are the coordinates of the medial and lateral menisci
         med_men_displ = displacements(1:a*4,:); lat_men_displ = displacements((a*4)+1:end,:); % This data is composed of 4 steps {Move,Load1, Load2 and load3} 
-        [a,~] = size(med_men_displ); [b,~] = size(lat_men_displ);
-        a = a/4; b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
+        [b,~] = size(lat_men_displ); %[a,~] = size(med_men_displ); 
+        b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
         for it =1:4
             defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
             defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
@@ -376,13 +392,18 @@ classdef myFunctions
         if test == "KNEE 2"
             obj.axes = [3,2];
             obj.pixelConv = .15;
+            obj.path = "MatlabOutput\Knee 2";
         elseif test == "KNEE 4"
             obj.axes = [3,2];
             obj.pixelConv = .293;
+            obj.path =  "MatlabOutput\Knee 4";
         elseif test == "KNEE 5"
             obj.axes = [2,3];
             obj.pixelConv = .293;
+            obj.path =  "MatlabOutput\Knee 5";
+            obj.mnmx = true; % This is the case where the SI is pointing downs instead of upwards hence causes issues in code.
         end
+        py.importlib.import_module('HelperFunc');
         val = py.HelperFunc.checkInpfile(kneeName);
         if val == 0
             error("Ensure the right Abaqus file i.e .inp file is in the root directory")

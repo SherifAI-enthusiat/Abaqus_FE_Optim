@@ -1,7 +1,8 @@
 import sys,os
 import numpy as np
 absPath = os.path.dirname(__file__)
-workspacePath = sys.argv[-1]
+workspacePath = sys.argv[0]
+storePath = sys.argv[1]
 from odbAccess import NODAL
 ### Display
 def display(data):
@@ -46,8 +47,8 @@ def getnodeSet(myOdb,surf):
 
 def RetrieveData():
     odbToolbox = os.path.join(absPath,"postProTools")
-    medCoordPath = os.path.join(absPath,"MatlabOutput\medCoordData.txt")
-    latCoordPath = os.path.join(absPath,"MatlabOutput\latCoordData.txt")
+    medCoordPath = os.path.join(absPath,"%s\medCoordData.txt"%(storePath))
+    latCoordPath = os.path.join(absPath,"%s\latCoordData.txt"%(storePath))
     medEpiCoordPath = os.path.join(workspacePath,"Results\medEpiCoordData.txt")
     latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
     medDisplPath = os.path.join(workspacePath,"Results\medDisplData.txt")
@@ -99,13 +100,11 @@ def RetrieveData():
                     newdat = displacementData(dat)
                     tmp_epi_lat.append(newdat)
 
-    for ind in range(2):
-        if ind == 0:
-            saveData2File(medDisplPath,tmp_med)
-            saveData2File(latDisplPath,tmp_lat)
-        else: # These are epicondyle displacements
-            saveData2File(medEpiCoordPath,tmp_epi_med,append=True)
-            saveData2File(latEpiCoordPath,tmp_epi_lat,append=True)
+    # Saving files to folder.
+    saveData2File(medDisplPath,tmp_med)
+    saveData2File(latDisplPath,tmp_lat)
+    saveData2File(medEpiCoordPath,tmp_epi_med,append=True)
+    saveData2File(latEpiCoordPath,tmp_epi_lat,append=True)
 
     myOdb.close()
     return 
