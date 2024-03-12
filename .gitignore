@@ -1,4 +1,5 @@
 /MatlabOutput/Figures
+/MatlabOutput/Knee */*.txt
 /MatlabOutput/output_*.mat
 /MatlabOutput/*.txt
 /RunDir/workspace_*
