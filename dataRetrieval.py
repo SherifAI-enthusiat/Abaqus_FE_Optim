@@ -1,16 +1,20 @@
 import sys,os
 import numpy as np
 absPath = os.path.dirname(__file__)
-workspacePath = sys.argv[0]
-storePath = sys.argv[1]
+tmp = sys.argv[-1].split("-")
+workspacePath = tmp[0]
+storePath = tmp[-1]
 from odbAccess import NODAL
 ### Display
 def display(data):
     outputName2 = os.path.join(absPath,"debugReport.ascii")
     with open(outputName2,"a") as file:
-        for ind,item in enumerate(data):
-            cm = str(ind) + " %s\n"%item
-            file.writelines(cm)
+        if type(data)==list:
+            for ind,item in enumerate(data):
+                cm = str(ind) + " %s\n"%item
+                file.writelines(cm)
+        else:
+            file.writelines(data)
 
 def displacementData(datHandle):
     temp = []
@@ -62,7 +66,8 @@ def RetrieveData():
     # import OdbTool_1_ver1 as AnOdb_tool
     myOdb = odbTools.openOdb(odbFile)
     
-    menSurf =['MEDSURF','LATSURF','MEDEPICONDYLE','LATEPICONDYLE']
+    menSurf = ['MEDSURF','LATSURF']
+    epiCoords = ['MEDEPICONDYLE','LATEPICONDYLE']
     # Undeformed Coordinates to file - Check to see of the file exists first before writing
     if not os.path.exists(medCoordPath):
         for itm in menSurf:
@@ -71,17 +76,21 @@ def RetrieveData():
                 undeformedCoordData(subsetHandle,medCoordPath)
             elif set.endswith('LATSURF'):
                 undeformedCoordData(subsetHandle,latCoordPath)
-            elif set.endswith('MEDEPICONDYLE'):
-                undeformedCoordData(subsetHandle,medEpiCoordPath)
-            else:
-                undeformedCoordData(subsetHandle,latEpiCoordPath)
 
+    for itm in epiCoords:
+        subsetHandle,set = getnodeSet(myOdb,itm)
+        if set.endswith('MEDEPICONDYLE'):
+            undeformedCoordData(subsetHandle,medEpiCoordPath)
+        elif set.endswith('LATEPICONDYLE'):
+            undeformedCoordData(subsetHandle,latEpiCoordPath)
+
+    menSurfn = ['MEDSURF','LATSURF','MEDEPICONDYLE','LATEPICONDYLE']
     tmp_med = []; tmp_lat =[]; tmp_epi_med =[];tmp_epi_lat =[]
     for _,stpName in enumerate(myOdb.steps.keys()):
         if stpName.startswith('Load') or stpName.startswith('Move'):
             frameData = myOdb.steps[stpName].frames[-1]
             fieldData = frameData.fieldOutputs['U']
-            for itm in menSurf:
+            for itm in menSurfn:
                 subsetHandle,surf = getnodeSet(myOdb,itm)
                 if surf.endswith('MEDSURF'):
                     dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
@@ -108,5 +117,9 @@ def RetrieveData():
 
     myOdb.close()
     return 
-
+# tmpn = sys.argv[-1].split("-")
+# tmp = "StorePath Path: %s\n"%(tmpn[-1])
+# tmp1 = "WorkspacePath Path: %s\n"%(tmpn[0])
+# display(tmp)
+# display(tmp1)
 RetrieveData()

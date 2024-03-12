@@ -26,10 +26,10 @@ classdef myFunctions
             ff = fullfile(obj.path,{'expData.mat'});
             load(string(ff(1)));  
             if py.ParamTools.material_stability(x)
-                formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d %s';%% This is where I can change bits.
+                formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
-        %         [~, workspacePath]= pyrunfile(cmd,["Mcount"," workspacePath"]);
-                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
+                [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
+                % workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
                 data = obj.measureMenisci(workspacePath);
             else
                 data = zeros(4,12);
@@ -49,7 +49,7 @@ classdef myFunctions
             % fig1 = figure(1); oriAx = axes;
             %% Undeformed and displacement data
             fp_coords = fullfile(obj.path,["medCoordData.txt";"latCoordData.txt";"expData.mat"]);
-            fp_disp = fullfile(path+"\Results",['medDisplData.txt';"latDisplData.txt";"medEpiCoordData.txt";"latEpiCoordData.txt"]);
+            fp_disp = fullfile(string(path)+"\Results",['medDisplData.txt';"latDisplData.txt";"medEpiCoordData.txt";"latEpiCoordData.txt"]);
             med_men = readmatrix(string(fp_coords(1)));lat_men = readmatrix(string(fp_coords(2)));
             med_men_displ = readmatrix(string(fp_disp(1)));lat_men_displ = readmatrix(string(fp_disp(2)));
             medEpiCoord = readmatrix(string(fp_disp(3)));latEpiCoord = readmatrix(string(fp_disp(4)));
@@ -388,7 +388,7 @@ classdef myFunctions
     end
 
     function [obj] = collectkneeDetails(obj,kneeName)
-        test = upper(kneeName);
+        test = upper(kneeName); obj.mnmx = false;
         if test == "KNEE 2"
             obj.axes = [3,2];
             obj.pixelConv = .15;
@@ -405,6 +405,7 @@ classdef myFunctions
         end
         py.importlib.import_module('HelperFunc');
         val = py.HelperFunc.checkInpfile(kneeName);
+        py.HelperFunc.initialise();
         if val == 0
             error("Ensure the right Abaqus file i.e .inp file is in the root directory")
         end

@@ -1,6 +1,6 @@
 # from scipy.optimize import least_squares
 # from scipy.optimize import minimize
-from scipy.io import savemat
+# from scipy.io import savemat
 import numpy as np
 import subprocess,os,sys
 import time
@@ -29,11 +29,11 @@ def Abqfunc(x,orifile,workspacePath,storePath):
     check = True; tConst =0
     ## Code to write new .inp file
     workspaceInp = write2InpFile.writeInp(x,orifile,workspacePath,inpName)
-    jobName = "genOdb_%s"%(workspacePath.split("_")[-1])
-    staFile = os.path.join(workspacePath,"genOdb_%s.sta"%(workspacePath.split("_")[-1]))
+    jobNum = workspacePath.split("_")[-1]
+    staFile = os.path.join(workspacePath,"genOdb_%s.sta"%(jobNum))
     os.chdir(workspacePath)
     if par.material_stability(x):
-        cmd = r'abaqus memory=20000mb job=genOdb_%s input="%s" cpus=4'%(workspacePath.split("_")[-1],workspaceInp)
+        cmd = r'abaqus memory=20000mb job=genOdb_%s input="%s" cpus=4'%(jobNum,workspaceInp)
         pro = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True,
                              creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         
@@ -47,7 +47,7 @@ def Abqfunc(x,orifile,workspacePath,storePath):
     ## PostProcessing - I want to use queues to manage where results go    
     # if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
     os.chdir(basePath)
-    commandn = r'%s -- "%s %s"'%(command,workspacePath,storePath)
+    commandn = r'%s -- "%s-%s"'%(command,workspacePath,storePath)
     pCall2 = subprocess.run(commandn, shell= True, capture_output=True, text=True)
     # outputName = os.path.join(workspacePath,"feaResults.npy")
     # try:
@@ -68,11 +68,13 @@ def Abqfunc(x,orifile,workspacePath,storePath):
 
 ## Matlab version
 dictn =[]
-for i in range(1,len(sys.argv)-1):
+for i in range(1,len(sys.argv)-2):
     dictn.append(sys.argv[i])
-x0 =np.hstack([dictn])
-workspacePath,Mcount=HelperFunc.communicate()
-data = Abqfunc(x0,orifile,workspacePath,sys.argv[-1])
+x0 = np.hstack([dictn])
+workspacePath,Mcount = HelperFunc.communicate()
+# HelperFunc.display(x0)
+# HelperFunc.display(sys.argv[-1])
+Test = Abqfunc(x0,orifile,workspacePath,sys.argv[-1])
 # # try:
 # #     shutil.rmtree(workspacePath)
 # # except:

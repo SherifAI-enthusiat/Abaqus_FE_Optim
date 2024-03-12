@@ -2,7 +2,7 @@ import os,time
 import random
 import glob
 from tkinter import messagebox
-# import psutil, shutil
+import shutil
 from scipy.io import savemat
 import numpy as np
 from queue import Queue
@@ -103,9 +103,12 @@ def write2matlab(dat,workspacePath):
 def display(data):
     outputName2 = os.path.join(basePath,"debugReport.ascii")
     with open(outputName2,"a") as file:
-        for ind,item in enumerate(data):
-            cm = str(ind) + " %s\n"%item
-            file.writelines(cm)
+        if type(data)==list:
+            for ind,item in enumerate(data):
+                cm = str(ind) + " %s\n"%item
+                file.writelines(cm)
+        else:
+            file.writelines(data)
 
 ## Build working directory path and variable for matlab
 def communicate():
