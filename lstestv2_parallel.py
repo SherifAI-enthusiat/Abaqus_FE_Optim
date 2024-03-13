@@ -51,9 +51,9 @@ def Abqfunc(x,orifile,workspacePath):
     pCall2 = subprocess.call(commandn, shell=True)
     outputName = os.path.join(workspacePath,"feaResults.ascii")
     if os.path.exists(outputName):
-        dat= np.genfromtxt(outputName, delimiter=",")
+        dat = np.genfromtxt(outputName, delimiter=",")
     else:
-        dat = np.zeros([4,12])
+        dat = np.zeros([3,12])
     output = os.path.join("MatlabOutput","output_%s.mat"%(Mcount))
     savemat(output,{"dat": dat})
     return dat
