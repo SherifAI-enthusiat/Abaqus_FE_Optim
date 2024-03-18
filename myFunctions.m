@@ -30,7 +30,12 @@ classdef myFunctions
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
                 % workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
-                data = obj.measureMenisci(workspacePath);
+                try
+                    data = obj.measureMenisci(workspacePath);
+                catch
+                    data = zeros(4,12);
+                end
+
             else
                 data = zeros(4,12);
             end
@@ -323,8 +328,13 @@ classdef myFunctions
         [b,~] = size(lat_men_displ); %[a,~] = size(med_men_displ); 
         b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
         for it =1:4
-            defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
-            defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
+            try
+                defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
+                defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
+            catch
+                defCoords(it).med = med_men;
+                defCoords(it).lat = lat_men;
+            end
         end
         % This is a structure with each row corresponding to the load step{Move, Load1, Load2,Load3}
     end

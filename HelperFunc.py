@@ -124,12 +124,13 @@ def communicate():
 ## The aim of this function is to check and ensure everything is in order before starting the optimisation
 # This includes deleting workspace_%d folders, clearing out WorkQueue.ascii file.
 def initialise():
+    Mesh_dat = glob.glob(os.path.join("MatlabOutput\*","*.txt"))
     workspacePaths = glob.glob(os.path.join(RunDir,"workspace_*"))#inp3
     output = glob.glob(os.path.join(MatlabOutput,"output_*.mat"))
     queFile = [os.path.join(basePath,"WorkQueue.ascii")]
     debugFile = [os.path.join(basePath,"debugReport.ascii")]
     OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
-    files2delete = workspacePaths + output + queFile + debugFile
+    files2delete = workspacePaths + output + queFile + debugFile + Mesh_dat
     # kill_proc('SMA')
     for path in files2delete:
         if os.path.isdir(path):

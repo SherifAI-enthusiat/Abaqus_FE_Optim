@@ -76,7 +76,7 @@ def RetrieveData():
                 undeformedCoordData(subsetHandle,medCoordPath)
             elif set.endswith('LATSURF'):
                 undeformedCoordData(subsetHandle,latCoordPath)
-
+    # This is for the locations of the lateral and medial epicondyle eminence{tibia features}
     for itm in epiCoords:
         subsetHandle,set = getnodeSet(myOdb,itm)
         if set.endswith('MEDEPICONDYLE'):
@@ -88,26 +88,29 @@ def RetrieveData():
     tmp_med = []; tmp_lat =[]; tmp_epi_med =[];tmp_epi_lat =[]
     for _,stpName in enumerate(myOdb.steps.keys()):
         if stpName.startswith('Load') or stpName.startswith('Move'):
-            frameData = myOdb.steps[stpName].frames[-1]
-            fieldData = frameData.fieldOutputs['U']
-            for itm in menSurfn:
-                subsetHandle,surf = getnodeSet(myOdb,itm)
-                if surf.endswith('MEDSURF'):
-                    dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
-                    newdat = displacementData(dat)
-                    tmp_med.append(newdat)
-                elif surf.endswith('LATSURF'):
-                    dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
-                    newdat = displacementData(dat)
-                    tmp_lat.append(newdat)
-                elif surf.endswith('MEDEPICONDYLE'):
-                    dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
-                    newdat = displacementData(dat)
-                    tmp_epi_med.append(newdat)
-                elif surf.endswith('LATEPICONDYLE'):
-                    dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
-                    newdat = displacementData(dat)
-                    tmp_epi_lat.append(newdat)
+            try:
+                frameData = myOdb.steps[stpName].frames[-1]
+                fieldData = frameData.fieldOutputs['U']
+                for itm in menSurfn:
+                    subsetHandle,surf = getnodeSet(myOdb,itm)
+                    if surf.endswith('MEDSURF'):
+                        dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
+                        newdat = displacementData(dat)
+                        tmp_med.append(newdat)
+                    elif surf.endswith('LATSURF'):
+                        dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
+                        newdat = displacementData(dat)
+                        tmp_lat.append(newdat)
+                    elif surf.endswith('MEDEPICONDYLE'):
+                        dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
+                        newdat = displacementData(dat)
+                        tmp_epi_med.append(newdat)
+                    elif surf.endswith('LATEPICONDYLE'):
+                        dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
+                        newdat = displacementData(dat)
+                        tmp_epi_lat.append(newdat)
+            except:
+                continue
 
     # Saving files to folder.
     saveData2File(medDisplPath,tmp_med)
