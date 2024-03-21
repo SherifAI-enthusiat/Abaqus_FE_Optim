@@ -68,7 +68,7 @@ def Abqfunc(x,orifile,workspacePath,storePath):
 
 ## Matlab version
 dictn =[]
-for i in range(1,len(sys.argv)-2):
+for i in range(1,len(sys.argv)-1):
     dictn.append(sys.argv[i])
 x0 = np.hstack([dictn])
 workspacePath,Mcount = HelperFunc.communicate()

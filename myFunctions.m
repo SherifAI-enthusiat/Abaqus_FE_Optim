@@ -417,7 +417,8 @@ classdef myFunctions
         val = py.HelperFunc.checkInpfile(kneeName);
         py.HelperFunc.initialise();
         if val == 0
-            error("Ensure the right Abaqus file i.e .inp file is in the root directory")
+            error(['Ensure the right Abaqus file i.e .inp file is in the root directory' ...
+                '(Check .inp file for the line "** Job name: TestJob-2 Model name: PCKnee2)" Model name needs to be equal to kneeName'])
         end
     end
 
