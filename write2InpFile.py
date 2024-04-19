@@ -1,9 +1,10 @@
 import os
+# import HelperFunc as hp
 def writeInp(x,orifile,workspacePath,inpName):
     paramToOpti = list()
     for arg in range(len(x)):
         paramToOpti.append(float(x[arg]))
-
+    # hp.display("For loop - Done!")
     workspaceInp = os.path.join(workspacePath,inpName)
     with open(orifile,'r') as oldlines:
         lines = oldlines.readlines()
@@ -14,6 +15,7 @@ def writeInp(x,orifile,workspacePath,inpName):
     data['menisci_locs'] = []
     test2 = tuple(float("{:.3f}".format(float(item))) for item in paramToOpti)
     temp3 = '%s\n'%float("{:.3f}".format(test2[2]/15)) # Spring stiffness values
+    # hp.display("test2 variable -done!")
     new_param = str(test2[0])
     for ind,item in enumerate(test2):
         if ind!= 0 and ind <=7:

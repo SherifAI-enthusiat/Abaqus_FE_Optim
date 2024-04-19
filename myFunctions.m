@@ -12,6 +12,7 @@ classdef myFunctions
         pixelConv; % This is data from ScanIP i.e. convertion factor from pixel to length(mm).
         path; % Path to experimental data stored.
         mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
+        weights; % This will be a means to control the what nodes the optimiser focuses on. {Follows 1st optimisation of all knees}. The default is none provided is ones
     end 
 
     methods
@@ -87,6 +88,7 @@ classdef myFunctions
         %% Cost function for optimisation
         function result = errorfunc(obj,data,expData,dir)
             temp = 100*(data(1:end,:)-expData)./expData; % .*scalarM TO DO need to check dimensions here.
+            temp = obj.weights.*temp; % this will be a means to control which nodes the optimiser focuses on.
             temp = temp.^2;
             if exist("dir",'var')
                 result = sum(temp,dir);
@@ -419,6 +421,15 @@ classdef myFunctions
         if val == 0
             error(['Ensure the right Abaqus file i.e .inp file is in the root directory' ...
                 '(Check .inp file for the line "** Job name: TestJob-2 Model name: PCKnee2)" Model name needs to be equal to kneeName'])
+        end
+    end
+
+    function [obj] = optimisationControl(obj,Scalar_weights)
+        if exist("Scalar_weights",'var')
+            obj.weights = Scalar_weights;
+        else % this is the default where we dont control which node the optimisation uses.
+            ff = fullfile(obj.path,"expData.mat"); load(ff); [a,b] = size(expData);
+            obj.weights = ones(a,b);
         end
     end
 
