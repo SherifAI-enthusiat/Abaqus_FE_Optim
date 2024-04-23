@@ -5,6 +5,7 @@ classdef myFunctions
         X_conv; % 
         oriCoords; % These are teh original coordinates collected from Abaqus - these are undeformed coordinates.
         med_men_length; % This is dimension length of the medial mesh from Matlab
+        dim_length; % This is address issues when measuring displacements
         defCoords; % This is used to store the resultant coords for all load cases.
         revCentres; % These are the new tibial centres for measurement purposes.
         results; % Results of measured displacements.
@@ -12,6 +13,9 @@ classdef myFunctions
         pixelConv; % This is data from ScanIP i.e. convertion factor from pixel to length(mm).
         path; % Path to experimental data stored.
         mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
+        config; % This is the flexion configuration of the knee - used only in "Abq2Opti_desktop" for validation purposes
+        expData; % This is the experimental data.
+        planeHeight; % this is the experiental data & helps solves a couple of issue with code
     end 
 
     methods
@@ -25,16 +29,22 @@ classdef myFunctions
         %     scalarM = 100.*ones(size(expData));
             ff = fullfile(obj.path,{'expData.mat'});
             load(string(ff(1)));  
+            if obj.config == "flexed" % Default is the axial configuration for the optimisation purposes.
+                obj.planeHeight = planeHeight_flex;
+                obj.dim_length = length(planeHeight_flex);
+                obj.expData = expData_flex;
+                obj.pixelConv = .15;
+            end
             if py.ParamTools.material_stability(x)
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
-                [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
-                % workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
+                % [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
+                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_3";
                 data = obj.measureMenisci(workspacePath);
             else
                 data = zeros(4,12);
             end
-            outputn = obj.errorfunc(double(data),expData);
+            outputn = obj.errorfunc(double(data),obj.expData);
         end
         %% This function handles the secondary aspect of the optimisation
         function measuredDisplacements = measureMenisci(obj,path)
@@ -48,12 +58,11 @@ classdef myFunctions
             % Need path for finding results - Done
             % fig1 = figure(1); oriAx = axes;
             %% Undeformed and displacement data
-            fp_coords = fullfile(obj.path,["medCoordData.txt";"latCoordData.txt";"expData.mat"]);
+            fp_coords = fullfile(obj.path,["medCoordData.txt";"latCoordData.txt"]);
             fp_disp = fullfile(string(path)+"\Results",['medDisplData.txt';"latDisplData.txt";"medEpiCoordData.txt";"latEpiCoordData.txt"]);
             med_men = readmatrix(string(fp_coords(1)));lat_men = readmatrix(string(fp_coords(2)));
             med_men_displ = readmatrix(string(fp_disp(1)));lat_men_displ = readmatrix(string(fp_disp(2)));
             medEpiCoord = readmatrix(string(fp_disp(3)));latEpiCoord = readmatrix(string(fp_disp(4)));
-            load(string(fp_coords(3)));
             % Undeformed data - Move step is applied to bring it to the undeformed technically. 
             % Since Abaqus has issues with surfaces in contact. So i have to rearrange the data into four load steps and added the Move step load case to coord data.
             %% This piece of code determines the axis on which the menisci lies - {Doesnt work consistently for all samples hence I decided to ignore it}
@@ -66,7 +75,7 @@ classdef myFunctions
             % axes = [axisSI,axisAP];
             %% This piece of code determines the location of the menisci points for measurements.
             tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
-            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,obj.axes);
+            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,obj.axes);
             %% I am here - Need to verify that points around the menisci are at the right location.
             % relative to surface from Abaqus. i then need to check resultant coords and measure points.
             %% FindPointsInCylinder function
@@ -80,8 +89,8 @@ classdef myFunctions
             % end
         end
         %% Cost function for optimisation
-        function result = errorfunc(obj,data,expData,dir)
-            temp = 100*(data(1:end,:)-expData)./expData; % .*scalarM TO DO need to check dimensions here.
+        function result = errorfunc(obj,data,dir)
+            temp = 100*(data(1:end,:)-obj.expData)./obj.expData; % .*scalarM TO DO need to check dimensions here.
             temp = temp.^2;
             if exist("dir",'var')
                 result = sum(temp,dir);
@@ -267,7 +276,7 @@ classdef myFunctions
         end
     end
 
-    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,planeHeight,axes) % To - Do
+    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,axes) % To - Do
         %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results for optimisation purposes.
         ScalarA = 1.0; ScalarB = 1.5; ScalarC = 3.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
         if obj.mnmx == 0 % Default case
@@ -277,11 +286,11 @@ classdef myFunctions
             D_vec = tibiaEpiCoords.med(:,:) - tibiaEpiCoords.lat(:,:);
             lt = ["+","-"];
         end
-        [a,~] = size(D_vec);
+
         tes = obj.generatePoints(70,6); % these are defined constants in ScanIP
         Points2Measure = struct();
         SI_Dir = axes(1); AP_Dir = axes(2);
-        for it = 1:a
+        for it = 1: obj.dim_length
             % I will use newCentre to calc locations around the periphery of the menisci. The newcentre is calc based on two operations
             % 1. Using the direction vector based on tibial features 2. Modifying location using original tibia centres and translating by some amount.
             if obj.mnmx == 0 % Default case
@@ -307,7 +316,7 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            constHeight = obj.pixelConv*planeHeight(it);
+            constHeight = obj.pixelConv*obj.planeHeight(it);
             newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
             newCentre(it).med(1,SI_Dir) = constHeight; 
             newCentre(it).lat(1,SI_Dir) = constHeight;
@@ -321,8 +330,14 @@ classdef myFunctions
         med_men = obj.oriCoords(1:a,:); lat_men = obj.oriCoords(a+1:end,:); % These are the coordinates of the medial and lateral menisci
         med_men_displ = displacements(1:a*4,:); lat_men_displ = displacements((a*4)+1:end,:); % This data is composed of 4 steps {Move,Load1, Load2 and load3} 
         [b,~] = size(lat_men_displ); %[a,~] = size(med_men_displ); 
-        b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
-        for it =1:4
+       
+        if obj.config == "flexed"
+            b = b/4;  ltA = [1,a+1,2*a+1]; ltB = [1,b+1,2*b+1];
+        else
+            b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
+        end
+        
+        for it =1:obj.dim_length
             defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
             defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
         end
@@ -401,14 +416,19 @@ classdef myFunctions
             obj.axes = [2,3];
             obj.pixelConv = .293;
             obj.path =  "MatlabOutput\Knee 5";
-            obj.mnmx = true; % This is the case where the SI is pointing downs instead of upwards hence causes issues in code.
+            obj.mnmx = true; % This is the case where the SI is pointing downwards instead of upwards hence causes issues in code.
         end
+        ff = fullfile(obj.path,{'expData.mat'});
+        load(string(ff)); 
+        obj.expData = expData; % This is the default case
+        obj.planeHeight = planeHeight; % This is the default case
+        obj.dim_length = length(planeHeight);
         py.importlib.import_module('HelperFunc');
-        val = py.HelperFunc.checkInpfile(kneeName);
-        py.HelperFunc.initialise();
-        if val == 0
-            error("Ensure the right Abaqus file i.e .inp file is in the root directory")
-        end
+        % val = py.HelperFunc.checkInpfile(kneeName);
+        % py.HelperFunc.initialise();
+        % if val == 0
+        %     error("Ensure the right Abaqus file i.e .inp file is in the root directory")
+        % end
     end
 
 end

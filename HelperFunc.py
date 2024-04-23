@@ -1,4 +1,4 @@
-import os,time
+import os,time,subprocess
 import random
 import glob
 from tkinter import messagebox
@@ -157,3 +157,12 @@ def initialise():
 def OdbQueue(command):
     with open(OdbqueFile,"+a") as jobFile:
         jobFile.writelines(command+"\n")
+
+def writeOdbResults(workspacePath,storePath):
+    storePath = "MatlabOutput\\"+storePath
+    basePath = os.getcwd()
+    dataRet = os.path.join(basePath,"dataRetrieval.py")
+    command = 'abaqus python "%s"'%dataRet
+    commandn = r'%s -- "%s-%s"'%(command,workspacePath,storePath)
+    pCall2 = subprocess.run(commandn, shell= True)
+    return pCall2
