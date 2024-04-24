@@ -11,9 +11,9 @@ v2 = .15:.05:.5;
 [X,Y] = meshgrid(v1,v2);
 ptmatrix = [X(:),Y(:)];
 tpoints = CustomStartPointSet(ptmatrix);
-% Previous Uncomment to use lsqnonlin and fmincon
-algo ='trust-region-reflective'; %'interior-point';
-options = optimoptions(@lsqnonlin,'Algorithm',algo);
+% % Previous Uncomment to use lsqnonlin and fmincon
+% algo ='levenberg-marquardt';%'trust-region-reflective'; %'interior-point';
+% options = optimoptions(@lsqnonlin,'Algorithm',algo);
 % options.FiniteDifferenceStepSize = [.5,0.01];
 % options.UseParallel = true;
 %% Problem definition
@@ -31,6 +31,12 @@ if exist("te","var")==1
 end
 pool = parpool(4); % Trying to address error "IdleTimeout has been reached."
 [Xnew,fval,exitflag,output,solutions]= run(ms,problem,tpoints);
+
+%% Particle swarm case
+options = optimoptions('particleswarm','SwarmSize',5,'HybridFcn', @fmincon,'InertiaRange',[.5,1.5]);
+options.UseParallel = true;
+pool = parpool(4);
+[Xnew, fval, exitflag, output] = particleswarm(@myscript,2,lb, ub, options);
 
 %% 2nd optimisation 
 % new = zeros(size(solutions,2),10);
