@@ -12,8 +12,9 @@ function [outputn] = myscript(x)
         cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9)); % 
         try
             [~,data]= pyrunfile(cmd,["Mcount","data"]);
-        catch
+        catch Error
             warning('Problem using function.  Assigning a value of 0.');
+            warning(Error)
             data = zeros(a,12);
         end
     else 

@@ -4,7 +4,7 @@ from scipy.io import savemat
 import numpy as np
 import subprocess,os,sys
 import time, psutil
-import pathlib2 as pth
+# import pathlib2 as pth
 import write2InpFile
 import HelperFunc
 import ParamTools as par

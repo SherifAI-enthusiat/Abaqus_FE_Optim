@@ -6,6 +6,7 @@ lb =[.01,1,1]; % This is the lower bound
 ub =[20,250,30]; % This is the lower bound 
 % %% Optimisation using particle swarm from scratch
 options = optimoptions('particleswarm','SwarmSize',7,'HybridFcn', @fmincon,'InertiaRange',[.5,1.5]);
-options.UseParallel = true;
-[Xnew, fval, exitflag, output] = particleswarm(@myscript,3,lb, ub, options);
+% options.UseParallel = true;
+myFunc = @(x)myscript(x);
+[Xnew, fval, exitflag, output] = particleswarm(myFunc,3,lb, ub, options);
 save("last_run.mat")
