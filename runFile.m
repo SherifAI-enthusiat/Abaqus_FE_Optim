@@ -2,9 +2,9 @@
 clear,clc;
 % pyrunfile("initialiseJob.py");
 Obj = myFunctions();
-Obj = Obj.collectkneeDetails("Knee 4");
-knee4Weights = zeros(4,12); % Copy and paste weights from excel before proceeding.
-Obj = Obj.optimisationControl(knee4Weights);
+Obj = Obj.collectkneeDetails("Knee 2");
+knee2Weights = zeros(4,12); % Copy and paste weights from excel before proceeding.
+Obj = Obj.optimisationControl(knee2Weights);
 x0 =[20,50,1.4583]; % Here I am only interested in Ep,Ef and Gpf [20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583]
 lb =[.01,1,1]; % This is the lower bound 
 ub =[20,250,30]; % This is the lower bound 
