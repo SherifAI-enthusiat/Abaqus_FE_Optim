@@ -2,7 +2,8 @@ import os,time
 import random
 import glob
 from tkinter import messagebox
-import psutil, shutil
+# import psutil, shutil
+import shutil
 from scipy.io import savemat
 import numpy as np
 from queue import Queue
@@ -32,13 +33,13 @@ def removefiles(mode,path=None):
         for file in files:
             if file.endswith(".lck"):
                 os.remove(file)
-def no_memory():
-    virtual_memory = psutil.virtual_memory()
-    available_memory = virtual_memory.available
-    if available_memory/1000000 < 20000:
-        val = True
-    else:val = False
-    return val
+# def no_memory():
+#     virtual_memory = psutil.virtual_memory()
+#     available_memory = virtual_memory.available
+#     if available_memory/1000000 < 20000:
+#         val = True
+#     else:val = False
+#     return val
 
 ### File read
 def fileReader(filePath,cpPath=None):
@@ -112,7 +113,7 @@ def initialise():
     debugFile = [os.path.join(basePath,"debugReport.ascii")]
     OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
     files2delete = workspacePaths + output + queFile + debugFile
-    kill_proc('SMA')
+    # kill_proc('SMA')
     for path in files2delete:
         if os.path.isdir(path):
             shutil.rmtree(path)
@@ -122,19 +123,19 @@ def initialise():
             pass
     return
 
-def kill_proc(jobName):
-    processes = psutil.process_iter()
-    for process in processes:
-        try:
-            tmp=process.cmdline()
-            if jobName in tmp:
-                if jobName =="SMA": # This is to ensure that the process that is closed is the right one.
-                    results = messagebox.askyesno("Confirm process termination", f"Are you sure you want to terminate {process.name()}?")
-                    if results:
-                        process.terminate()
-                process.terminate() # This is the default case if the item is in tmp
-        except:
-            continue
+# def kill_proc(jobName):
+#     processes = psutil.process_iter()
+#     for process in processes:
+#         try:
+#             tmp=process.cmdline()
+#             if jobName in tmp:
+#                 if jobName =="SMA": # This is to ensure that the process that is closed is the right one.
+#                     results = messagebox.askyesno("Confirm process termination", f"Are you sure you want to terminate {process.name()}?")
+#                     if results:
+#                         process.terminate()
+#                 process.terminate() # This is the default case if the item is in tmp
+#         except:
+#             continue
 
 def OdbQueue(command):
     with open(OdbqueFile,"+a") as jobFile:
