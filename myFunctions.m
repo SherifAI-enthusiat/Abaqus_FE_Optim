@@ -15,6 +15,9 @@ classdef myFunctions
         mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
         config; % This is the flexion configuration of the knee - used only in "Abq2Opti_desktop" for validation purposes
         expData; % This is the experimental data.
+        tibiaFeatures;
+        avgheight;
+        mVal_lVal;
         planeHeight; % this is the experiental data & helps solves a couple of issue with code
     end 
 
@@ -33,21 +36,22 @@ classdef myFunctions
                 obj.planeHeight = planeHeight_flex;
                 obj.dim_length = length(planeHeight_flex);
                 obj.expData = expData_flex;
-                obj.pixelConv = .15;
+                obj.pixelConv = .293;
             end
             if py.ParamTools.material_stability(x)
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 % [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
-                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_3";
-                data = obj.measureMenisci(workspacePath);
+                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_4";
+                [dat,tibiaF,obj] = obj.measureMenisci(workspacePath);
+                data.dat = dat; data.tibiaF = tibiaF;
             else
                 data = zeros(4,12);
             end
-            outputn = obj.errorfunc(double(data),obj.expData);
+            outputn = obj.errorfunc(data,obj.expData);
         end
         %% This function handles the secondary aspect of the optimisation
-        function measuredDisplacements = measureMenisci(obj,path)
+        function [measuredDisplacements,tibiaData,obj] = measureMenisci(obj,path)
             % This script collects the radial displacements of the menisci with respect two points at approx. centre of either tibial compartment.
             %% To - Do 
             % ------  Input required for optimisation
@@ -58,8 +62,8 @@ classdef myFunctions
             % Need path for finding results - Done
             % fig1 = figure(1); oriAx = axes;
             %% Undeformed and displacement data
-            fp_coords = fullfile(obj.path,["medCoordData.txt";"latCoordData.txt"]);
-            fp_disp = fullfile(string(path)+"\Results",['medDisplData.txt';"latDisplData.txt";"medEpiCoordData.txt";"latEpiCoordData.txt"]);
+            fp_coords = fullfile(obj.path,["medCoordData.txt";"latCoordData.txt";"expData.mat"]);
+            fp_disp = fullfile(string(path)+"\Results",['medDisplData.txt';"latDisplData.txt";"medEpiCoordData.txt";"latEpiCoordData.txt";"expData.mat"]);
             med_men = readmatrix(string(fp_coords(1)));lat_men = readmatrix(string(fp_coords(2)));
             med_men_displ = readmatrix(string(fp_disp(1)));lat_men_displ = readmatrix(string(fp_disp(2)));
             medEpiCoord = readmatrix(string(fp_disp(3)));latEpiCoord = readmatrix(string(fp_disp(4)));
@@ -67,6 +71,9 @@ classdef myFunctions
             % Since Abaqus has issues with surfaces in contact. So i have to rearrange the data into four load steps and added the Move step load case to coord data.
             %% This piece of code determines the axis on which the menisci lies - {Doesnt work consistently for all samples hence I decided to ignore it}
             % Obj = myFunctions();
+            load(string(fp_coords(3)));
+            obj.expData = expData;
+            obj.tibiaFeatures = tibiaFeatures;
             obj.oriCoords = vertcat(med_men,lat_men);
             obj.med_men_length = size(med_men,1); 
             displ = vertcat(med_men_displ,lat_men_displ);
@@ -75,7 +82,8 @@ classdef myFunctions
             % axes = [axisSI,axisAP];
             %% This piece of code determines the location of the menisci points for measurements.
             tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
-            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,obj.axes);
+            tibiaData = [tibiaEpiCoords.med;tibiaEpiCoords.lat];
+            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,displ,obj.axes);
             %% I am here - Need to verify that points around the menisci are at the right location.
             % relative to surface from Abaqus. i then need to check resultant coords and measure points.
             %% FindPointsInCylinder function
@@ -90,7 +98,7 @@ classdef myFunctions
         end
         %% Cost function for optimisation
         function result = errorfunc(obj,data,dir)
-            temp = 100*(data(1:end,:)-obj.expData)./obj.expData; % .*scalarM TO DO need to check dimensions here.
+            temp = 100*(data.dat(1:end,:)-obj.expData)./obj.expData; % .*scalarM TO DO need to check dimensions here.
             temp = temp.^2;
             if exist("dir",'var')
                 result = sum(temp,dir);
@@ -276,9 +284,10 @@ classdef myFunctions
         end
     end
 
-    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,axes) % To - Do
+    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,displ,axes) % To - Do
         %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results for optimisation purposes.
         ScalarA = 1.0; ScalarB = 1.5; ScalarC = 3.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
+        planeHeight = obj.planeHeight;
         if obj.mnmx == 0 % Default case
             D_vec = tibiaEpiCoords.lat(:,:) - tibiaEpiCoords.med(:,:); % This determines the points on the tibial plateaux that I measure bits from.
             lt = ["-","+"];
@@ -286,7 +295,7 @@ classdef myFunctions
             D_vec = tibiaEpiCoords.med(:,:) - tibiaEpiCoords.lat(:,:);
             lt = ["+","-"];
         end
-
+        [a,~] = size(D_vec);
         tes = obj.generatePoints(70,6); % these are defined constants in ScanIP
         Points2Measure = struct();
         SI_Dir = axes(1); AP_Dir = axes(2);
@@ -316,31 +325,35 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            constHeight = obj.pixelConv*obj.planeHeight(it);
+            [~,obj] =obj.ResultantCoordinates(displ);
+            constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight;% this is to correct for the issue of modelling in Abaqus
             newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
             newCentre(it).med(1,SI_Dir) = constHeight; 
             newCentre(it).lat(1,SI_Dir) = constHeight;
-            Points2Measure(it).step = newcoord; 
+            Points2Measure(it).step = newcoord;  
         end
     end
 
-    function defCoords = ResultantCoordinates(obj,displacements)
+    function [defCoords,obj] = ResultantCoordinates(obj,displacements)
         % This function finds the deformed coordinate given coordinates from the assembly in Abaqus.  
         a = obj.med_men_length;
         med_men = obj.oriCoords(1:a,:); lat_men = obj.oriCoords(a+1:end,:); % These are the coordinates of the medial and lateral menisci
         med_men_displ = displacements(1:a*4,:); lat_men_displ = displacements((a*4)+1:end,:); % This data is composed of 4 steps {Move,Load1, Load2 and load3} 
         [b,~] = size(lat_men_displ); %[a,~] = size(med_men_displ); 
-       
         if obj.config == "flexed"
             b = b/4;  ltA = [1,a+1,2*a+1]; ltB = [1,b+1,2*b+1];
         else
             b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
         end
-        
+        % b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
+        mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
+        obj.mVal_lVal = [mVal,lVal];
+        obj.avgheight = ( mVal + lVal )/2; % Average of movement in the meniscus
         for it =1:obj.dim_length
             defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
             defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
         end
+        obj.defCoords = defCoords;
         % This is a structure with each row corresponding to the load step{Move, Load1, Load2,Load3}
     end
 

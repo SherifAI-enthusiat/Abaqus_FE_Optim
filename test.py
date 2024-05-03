@@ -131,9 +131,16 @@
 ## Abaqus version - I use this to read and write results for individual odb files.
 # import subprocess,os
 import HelperFunc as Hp
+import glob,os
 workspacePath = "C:\\WorkThings\\github\Abaqus_FE_Optim\\runDir\\workspace_4"
-storePath = "Knee 2" # This is to store it to the MatlabOutput folder for evaluation.
-pCall2 = Hp.writeOdbResults(workspacePath,storePath)
+# folders = glob.glob("E:\Optimisation - Thesis studies\Knee 5\workspace_*")
+items = workspacePath
+storePath = "Knee 5" # This is to store it to the MatlabOutput folder for evaluation.
+# for items in folders:
+path = items+"\Results"
+if os.path.isdir(path):
+    os.rmdir(path)
+pCall2 = Hp.writeOdbResults(items,storePath)
 print(pCall2)
 
 
