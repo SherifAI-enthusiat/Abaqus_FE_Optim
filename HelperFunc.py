@@ -16,9 +16,9 @@ queFile = os.path.join(basePath,"WorkQueue.ascii")
 OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
 RunDir = os.path.join(basePath,"RunDir")
 
-def TestFunction():
-    print("Yes")
-    return
+def testPath():
+    testPath= glob.glob("runDir\\workspace_*")
+    return testPath[0]
 
 def checkInpfile(kneeName):
     lines = fileReader("TestJob-2.inp")

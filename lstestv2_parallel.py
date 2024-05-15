@@ -33,7 +33,7 @@ def Abqfunc(x,orifile,workspacePath,storePath):
     staFile = os.path.join(workspacePath,"genOdb_%s.sta"%(jobNum))
     os.chdir(workspacePath)
     if par.material_stability(x):
-        cmd = r'abaqus memory=20000mb job=genOdb_%s input="%s" cpus=4'%(jobNum,workspaceInp)
+        cmd = r'abaqus memory=20000mb job=genOdb_%s input="%s" cpus=3'%(jobNum,workspaceInp)
         pro = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True,
                              creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         
