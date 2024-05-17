@@ -1,7 +1,7 @@
 import os,time,subprocess
 import random
 import glob
-from tkinter import messagebox
+# from tkinter import messagebox
 import shutil
 from scipy.io import savemat
 import numpy as np
@@ -166,3 +166,28 @@ def writeOdbResults(workspacePath,storePath):
     commandn = r'%s -- "%s-%s"'%(command,workspacePath,storePath)
     pCall2 = subprocess.run(commandn, shell= True)
     return pCall2
+
+def collectParams(lines,optim):
+    bol = False
+    for ind,line in enumerate(lines):
+        if line.startswith('*Material') and line.endswith('PM_MENISCAL_MEN\n'):
+            params = lines[ind+2].strip("\n").split(",")
+            tmp = np.array(params)
+            tm1 =  f"{float(tmp[0]):.1f}";tm2 =  f"{float(tmp[2]):.2f}";tm3 =  f"{float(tmp[7]):.3f}"
+            opt1 =  f"{optim[0][0]:.1f}";opt2 =  f"{optim[0][2]:.2f}";opt3 =  f"{optim[0][7]:.3f}"
+            if tm1 == opt1 and tm2==opt2 and tm3==opt3:
+                bol = True
+            break
+    return bol
+
+def errorValue():
+    path = "E:\\Optimisation - Thesis studies\\Knee 4\\runDir"
+    files = glob.glob(path + "\\workspace_*\\TestJob-2.inp")
+    parameters = np.array([[20,20,161.30, 0.010, 0.010, 0.010, 9.901,28.175,28.175]])
+    files = []
+    for file in files:
+        lines = fileReader(file)
+        val = collectParams(lines,parameters)
+        if val:
+            files.append(file)
+    return files     

@@ -130,31 +130,20 @@
 
 ## Abaqus version - I use this to read and write results for individual odb files.
 # import subprocess,os
-import HelperFunc as Hp
-import glob,os
-workspacePath = "C:\\WorkThings\\github\Abaqus_FE_Optim\\runDir\\workspace_4"
-# folders = glob.glob("E:\Optimisation - Thesis studies\Knee 5\workspace_*")
-items = workspacePath
-storePath = "Knee 5" # This is to store it to the MatlabOutput folder for evaluation.
-# for items in folders:
-path = items+"\Results"
-if os.path.isdir(path):
-    os.rmdir(path)
-pCall2 = Hp.writeOdbResults(items,storePath)
-print(pCall2)
+# import HelperFunc as Hp
+# import glob,os
+# workspacePath = "C:\\WorkThings\\github\Abaqus_FE_Optim\\runDir\\workspace_4"
+# # folders = glob.glob("E:\Optimisation - Thesis studies\Knee 5\workspace_*")
+# items = workspacePath
+# storePath = "Knee 5" # This is to store it to the MatlabOutput folder for evaluation.
+# # for items in folders:
+# path = items+"\Results"
+# if os.path.isdir(path):
+#     os.rmdir(path)
+# pCall2 = Hp.writeOdbResults(items,storePath)
+# print(pCall2)
 
 
-# ## Test script version
-# pCall2 = subprocess.Popen(['python',"newScript.py"],stdout=subprocess.PIPE, text=False)
-# path = workspacePath + '/data.npy'
-# data = np.load(path)
-# print(data)
-# # output, _ = pCall2.communicate()
-# # ## Testing pickle
-# # y = pickle.loads(output)
-# # print(y)
-# # # tmp = pickle.dumps()
-# # # print(tmp) 
 # import write2InpFile
 # import numpy as np
 # import os
@@ -175,3 +164,17 @@ print(pCall2)
 # # val = checkInpfile('Knee 4')
 # initialise()
 # print("Yes")
+
+## Find optimised genOdb.
+import glob
+import HelperFunc as HP
+import numpy as np
+path = "E:\\Optimisation - Thesis studies\\Knee 4\\runDir"
+files = glob.glob(path + "\\workspace_*\\TestJob-2.inp")
+parameters = np.array([[20,20,161.30, 0.010, 0.010, 0.010, 9.901,28.175,28.175]])
+files = []
+for file in files:
+    lines = HP.fileReader(file)
+    val = HP.collectParams(lines,parameters)
+    if val:
+        print(file)
