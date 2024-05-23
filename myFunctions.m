@@ -46,7 +46,7 @@ classdef myFunctions
                     [FE_dat,FE_tibiaF,obj] = obj.measureMenisci(workspacePath);
 					% data.dat = dat; data.tibiaF = tibiaF;
                     dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.mVal_lVal,obj.axes(1),obj.weights,obj.K_value};
-                catch
+                catch ShowError
                     FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
 					% data.dat = dat; data.tibiaF = tibiaF;
                     dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.mVal_lVal,obj.axes(1),obj.weights,obj.K_value};

@@ -6,6 +6,7 @@ import shutil
 from scipy.io import savemat
 import numpy as np
 from queue import Queue
+import subprocess
 
 ## Paths
 process_queue = Queue(maxsize=1)
@@ -16,8 +17,18 @@ queFile = os.path.join(basePath,"WorkQueue.ascii")
 OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
 RunDir = os.path.join(basePath,"RunDir")
 
+
+def readOdb(testPath,storePath):
+    basePath = os.getcwd()
+    dataRet = os.path.join(basePath,"dataRetrieval.py")
+    command = 'abaqus python "%s"'%dataRet
+    commandn = r'%s -- "%s-%s"'%(command,testPath,storePath)
+    pCall2 = subprocess.run(commandn, shell= True, capture_output=True, text=True)
+    return
 def testPath():
     testPath= glob.glob("runDir\\workspace_*")
+    if len(testPath)==0:
+        testPath = glob.glob("runDir\\temp-*")
     return testPath[0]
 
 def checkInpfile(kneeName):
