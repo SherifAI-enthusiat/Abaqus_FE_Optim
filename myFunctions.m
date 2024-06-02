@@ -15,9 +15,9 @@ classdef myFunctions
         mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
         config; % This is the flexion configuration of the knee - used only in "Abq2Opti_desktop" for validation purposes
         expData; % This is the experimental data.
-        tibiaFeatures;
-        avgheight;
-        mVal_lVal;
+        tibiaFeatures; % These are the medial and lateral feature locations data obtained from ScanIP
+        avgheight;  % This quantity is used to store the average height moved
+        mVal_lVal; % Used to adjust experimental tibial movement data in error function
         planeHeight; % this is the experiental data & helps solves a couple of issue with code
     end 
 
@@ -42,7 +42,7 @@ classdef myFunctions
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 % [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
-                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_4";
+                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_5";
                 [dat,tibiaF,obj] = obj.measureMenisci(workspacePath);
                 data.dat = dat; data.tibiaF = tibiaF;
             else
@@ -255,7 +255,7 @@ classdef myFunctions
         ln_3D = p(1:3) + t*Dir;
         apprxAns = mean(data);
         delTa = abs(ln_3D - apprxAns);
-        cri = [.5,.5,.5]; ltn = ["cs","ks"];
+        cri = [.85,.85,.85]; ltn = ["cs","ks"];
         Bool = delTa>cri;
         if sum(Bool) >= 1
             pltM = ltn(1); ln_3D = apprxAns;
@@ -348,7 +348,7 @@ classdef myFunctions
         % b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
         mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
         obj.mVal_lVal = [mVal,lVal];
-        obj.avgheight = ( mVal + lVal )/2; % Average of movement in the meniscus
+        obj.avgheight = ( mVal + lVal )/2; % Average of movement in the meniscus - used to adjust the plane location.
         for it =1:obj.dim_length
             defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
             defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
@@ -385,6 +385,9 @@ classdef myFunctions
                         obj = obj.variables(parameters,sfM);
                         Con_X = fsolve(@obj.errorFunc_Surf,1);
                         [point,pltM]= obj.measuredPoint(Con_X,IntData);
+                        if isnan(point)
+                            point = mean(IntData,1);
+                        end
                     else
                         point = mean(IntData,1); %[Solve for t == Con_X] this is the case where there is not enough data for data fitting.
                         pltM = "rs"; % These are approximate solutions.
