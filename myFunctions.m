@@ -45,7 +45,7 @@ classdef myFunctions
                 try
                     [FE_dat,FE_tibiaF,obj] = obj.measureMenisci(workspacePath);
 					% data.dat = dat; data.tibiaF = tibiaF;
-                    dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.mVal_lVal,obj.axes(1),obj.weights,obj.K_value};
+                    dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.avgheight,obj.axes(1),obj.weights,obj.K_value};
                 catch ShowError
                     FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
 					% data.dat = dat; data.tibiaF = tibiaF;
@@ -108,7 +108,7 @@ classdef myFunctions
         end
         %% Cost function for optimisation
         function [result,temp1,obj] = errorfunc(obj,data)
-            trans_Tibia = [data{5}(1).*ones(4,3);data{5}(2).*ones(4,3)]; % Used to translate only along tibia loading axis
+            trans_Tibia = [data{5}(1).*ones(4,3);data{5}(1).*ones(4,3)]; % Used to translate only along tibia loading axis
             tibialFeatures = data{4}+trans_Tibia; % This is meant to be a correction for the tibial movements - due to FE modelling. 
 			tempA = 100*(data{1}-data{2})./data{2}; % .*scalarM TO DO need to check dimensions here.
             tempA = data{7}.*tempA; % Used to control situations when meaurement is problematic
