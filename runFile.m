@@ -5,8 +5,8 @@ Obj = myFunctions(); % K_Value is the weighting of the tibia contribution to the
 Obj.test = "False";  % Switch to True for testing
 Obj = Obj.collectkneeDetails("Knee 5");
 Obj.K_value = 0;
-% knee2Weights = zeros(4,12); % Copy and paste weights from excel before proceeding.
-Obj = Obj.optimisationControl();
+kneeWeights = zeros(4,12); % Pause in Debugger - Copy and paste weights from excel before proceeding.
+Obj = Obj.optimisationControl(kneeWeights);
 x0 =[20,50,1.4583]; % Here I am only interested in Ep,Ef and Gpf [20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583]
 lb =[.01,1,1]; % This is the lower bound 
 ub =[20,250,30]; % This is the lower bound 
@@ -17,4 +17,3 @@ if Obj.test == "False"
 end
 [Xnew, fval, exitflag, output] = particleswarm(@Obj.myscript,3,lb, ub, options);
 save("last_run.mat")
-errorTable = Obj.collectErrorValue(); % Need to check that this works

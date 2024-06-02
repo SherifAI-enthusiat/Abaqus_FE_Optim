@@ -28,7 +28,7 @@ classdef myFunctions
         function [outputn] = myscript(obj,x)
         % This function evaluates in Abaqus and returns a variable "count" which is
         % used to locate the results file.
-            vp = .01; vf_p = .01;
+            vp = .01; vf_p = .01; par = x;
             Gp = x(1)/(2*(1+vp)); % Gp
             x = [x(1),x(1),x(2),vp,vf_p,vf_p,Gp,x(3),x(3)];
         %     scalarM = 100.*ones(size(expData));
@@ -49,15 +49,15 @@ classdef myFunctions
                 catch ShowError
                     FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
 					% data.dat = dat; data.tibiaF = tibiaF;
-                    dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.mVal_lVal,obj.axes(1),obj.weights,obj.K_value};
+                    dataCell = {FE_dat,expData,FE_tibiaF,tibiaFeatures,[0,0],obj.axes(1),obj.weights,obj.K_value};
                 end
             else
 				FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
 				% data.dat = dat; data.tibiaF = tibiaF;
                 dataCell = {FE_dat,expData,FE_tibiaF,tibiaFeatures,[0,0],obj.axes(1),obj.weights,obj.K_value};
             end
-            [outputn,menContribution] = obj.errorfunc(dataCell);
-			resid = [menContribution,outputn]; % Menisci and tibial contributions
+            [outputn,menContribution,obj] = obj.errorfunc(dataCell);
+			resid = [par,menContribution,outputn]; % Menisci and tibial contributions - this feature to store output is not working.
 			obj.error_Value = vertcat(obj.error_Value,resid);
         end
         %% This function handles the secondary aspect of the optimisation
@@ -107,7 +107,7 @@ classdef myFunctions
             % end
         end
         %% Cost function for optimisation
-        function [result,temp1] = errorfunc(obj,data)
+        function [result,temp1,obj] = errorfunc(obj,data)
             trans_Tibia = [data{5}(1).*ones(4,3);data{5}(2).*ones(4,3)]; % Used to translate only along tibia loading axis
             tibialFeatures = data{4}+trans_Tibia; % This is meant to be a correction for the tibial movements - due to FE modelling. 
 			tempA = 100*(data{1}-data{2})./data{2}; % .*scalarM TO DO need to check dimensions here.
@@ -126,7 +126,7 @@ classdef myFunctions
             obj.parameters = parameters;
             obj.sfM = sfM;
         end
-        function error_Value = collectErrorValue(obj)
+        function [error_Value] = updateErrorValue(obj)
             errorValue = obj.error_Value;
         end
         %% Generating point to build cylinder
