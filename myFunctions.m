@@ -462,7 +462,7 @@ classdef myFunctions
     end
 
     function [obj] = optimisationControl(obj,Scalar_weights)
-        if exist("Scalar_weights",'var')
+        if exist("Scalar_weights",'var') && sum(Scalar_weights,"all")~=0
             obj.weights = Scalar_weights;
         else % this is the default where we dont control which node the optimisation uses.
             ff = fullfile(obj.path,"expData.mat"); load(ff); [a,b] = size(expData);

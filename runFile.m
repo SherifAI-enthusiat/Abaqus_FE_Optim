@@ -2,9 +2,9 @@
 clear,clc;
 % pyrunfile("initialiseJob.py");
 Obj = myFunctions(); % K_Value is the weighting of the tibia contribution to the objective function.
-Obj.test = "False";  % Switch to True for testing
+Obj.test = "True";  % Switch to True for testing
 Obj = Obj.collectkneeDetails("Knee 5");
-Obj.K_value = 0;
+Obj.K_value = 6;
 kneeWeights = zeros(4,12); % Pause in Debugger - Copy and paste weights from excel before proceeding.
 Obj = Obj.optimisationControl(kneeWeights);
 x0 =[20,50,1.4583]; % Here I am only interested in Ep,Ef and Gpf [20,20,100,0.3,0.2,0.2,4.7115,1.4583,1.4583]
