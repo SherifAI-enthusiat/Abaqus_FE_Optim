@@ -31,18 +31,18 @@ classdef myFunctions
             x = [x(1),x(1),x(2),vp,vf_p,vf_p,Gp,x(3),x(3)];
         %     scalarM = 100.*ones(size(expData));
             ff = fullfile(obj.path,{'expData.mat'});
-            load(string(ff(1)));  
-            if obj.config == "flexed" % Default is the axial configuration for the optimisation purposes.
-                obj.planeHeight = planeHeight_flex;
-                obj.dim_length = length(planeHeight_flex);
-                obj.expData = expData_flex;
-                obj.pixelConv = .293;
-            end
+            % load(string(ff(1)));  
+            % if obj.config == "flexed" % Default is the axial configuration for the optimisation purposes.
+            %     obj.planeHeight = planeHeight_flex;
+            %     obj.dim_length = length(planeHeight_flex);
+            %     obj.expData = expData_flex;
+            %     obj.pixelConv = .293;
+            % end
             if py.ParamTools.material_stability(x)
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 % [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
-                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_5";
+                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_6";
                 [dat,tibiaF,obj] = obj.measureMenisci(workspacePath);
                 data.dat = dat; data.tibiaF = tibiaF;
             else
@@ -72,10 +72,17 @@ classdef myFunctions
             %% This piece of code determines the axis on which the menisci lies - {Doesnt work consistently for all samples hence I decided to ignore it}
             % Obj = myFunctions();
             load(string(fp_coords(3)));
-            obj.expData = expData;
-            obj.tibiaFeatures = tibiaFeatures;
+            if obj.config =="flexed"
+                obj.planeHeight = planeHeight_flex;
+                obj.dim_length = length(planeHeight_flex);
+                obj.expData = expData_flex;
+                % obj.tibiaFeatures = tibiaFeatures_flex;
+            else
+                obj.expData = expData;
+                obj.tibiaFeatures = tibiaFeatures;
+            end 
             obj.oriCoords = vertcat(med_men,lat_men);
-            obj.med_men_length = size(med_men,1); 
+            obj.med_men_length = size(med_men,1);
             displ = vertcat(med_men_displ,lat_men_displ);
             % axisSI= obj.determineSI_Dir(); % Determines the horizontal plane within the coordinates
             % axisAP = obj.determineAP_Dir(); % This is experimental - i need to check that it works for all cases.
@@ -83,7 +90,7 @@ classdef myFunctions
             %% This piece of code determines the location of the menisci points for measurements.
             tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
             tibiaData = [tibiaEpiCoords.med;tibiaEpiCoords.lat];
-            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,displ,obj.axes);
+            [Points2Measure,obj] = obj.PointsAroundMenisci(tibiaEpiCoords,displ,obj.axes);
             %% I am here - Need to verify that points around the menisci are at the right location.
             % relative to surface from Abaqus. i then need to check resultant coords and measure points.
             %% FindPointsInCylinder function
@@ -284,10 +291,11 @@ classdef myFunctions
         end
     end
 
-    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,displ,axes) % To - Do
+    function [Points2Measure,obj] = PointsAroundMenisci(obj,tibiaEpiCoords,displ,axes) % To - Do
         %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results for optimisation purposes.
         ScalarA = 1.0; ScalarB = 1.5; ScalarC = 3.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
         planeHeight = obj.planeHeight;
+        [~,obj] =obj.ResultantCoordinates(displ);
         if obj.mnmx == 0 % Default case
             D_vec = tibiaEpiCoords.lat(:,:) - tibiaEpiCoords.med(:,:); % This determines the points on the tibial plateaux that I measure bits from.
             lt = ["-","+"];
@@ -325,11 +333,11 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            [~,obj] =obj.ResultantCoordinates(displ);
             constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight;% this is to correct for the issue of modelling in Abaqus
             newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
             newCentre(it).med(1,SI_Dir) = constHeight; 
             newCentre(it).lat(1,SI_Dir) = constHeight;
+            obj.revCentres = newCentre;
             Points2Measure(it).step = newcoord;  
         end
     end
