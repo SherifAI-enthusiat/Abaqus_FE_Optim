@@ -34,7 +34,7 @@ classdef myFunctions
         %     scalarM = 100.*ones(size(expData));
             ff = fullfile(obj.path,{'expData.mat'});
             load(string(ff(1)));  
-            if py.ParamTools.material_stability(x)
+             if py.ParamTools.material_stability(x)
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 if obj.test == "True"
