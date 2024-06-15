@@ -46,9 +46,12 @@ def Abqfunc(x,orifile,workspacePath,storePath):
     
     ## PostProcessing - I want to use queues to manage where results go    
     # if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
-    os.chdir(basePath)
-    commandn = r'%s -- "%s-%s"'%(command,workspacePath,storePath)
-    pCall2 = subprocess.run(commandn, shell= True, capture_output=True, text=True)
+    try:
+        os.chdir(basePath)
+        commandn = r'%s -- "%s-%s"'%(command,workspacePath,storePath)
+        pCall2 = subprocess.run(commandn, shell= True, capture_output=True, text=True)
+    except:
+        pass
     # outputName = os.path.join(workspacePath,"feaResults.npy")
     # try:
     #     dat= np.load(outputName)

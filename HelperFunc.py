@@ -90,6 +90,8 @@ def isCompleted(staFile,tConst):
         else: val = False; Tcmd = False
     except: # This case occurs when the .sta file is not yet written.
             val = False; Tcmd = False
+            if tConst>=10:
+                val = True; Tcmd = True
     return val,Tcmd
 
 def ManageQueue(Process,Mcount,check):
