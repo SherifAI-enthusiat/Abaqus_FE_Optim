@@ -4,6 +4,7 @@ classdef myFunctions
         sfM; % this approx surface data.
         X_conv; % 
         oriCoords; % These are teh original coordinates collected from Abaqus - these are undeformed coordinates.
+        adjoriCoords; % This was to account for supression of steps in Abaqus but might be irrelevant.
         med_men_length; % This is dimension length of the medial mesh from Matlab
         dim_length; % This is address issues when measuring displacements
         defCoords; % This is used to store the resultant coords for all load cases.
@@ -19,6 +20,7 @@ classdef myFunctions
         avgheight;  % This quantity is used to store the average height moved
         mVal_lVal; % Used to adjust experimental tibial movement data in error function
         planeHeight; % this is the experiental data & helps solves a couple of issue with code
+        tibialDrive;
     end 
 
     methods
@@ -72,21 +74,26 @@ classdef myFunctions
             %% This piece of code determines the axis on which the menisci lies - {Doesnt work consistently for all samples hence I decided to ignore it}
             % Obj = myFunctions();
             load(string(fp_coords(3)));
+            obj.med_men_length = size(med_men,1);
+            displ = vertcat(med_men_displ,lat_men_displ);
             if obj.config =="flexed"
                 obj.planeHeight = planeHeight_flex;
                 obj.dim_length = length(planeHeight_flex);
                 obj.expData = expData_flex;
-                % obj.tibiaFeatures = tibiaFeatures_flex;
+                dimMed = length(med_men_displ)/4; dimLat = length(lat_men_displ)/4;
+                % displA = vertcat(med_men_displ(1:dimMed,:),lat_men_displ(1:dimLat,:));
+                % Correction - due to tibia drive correction {1. TIbia drive  2. Supression of "Move" step}
+                obj.oriCoords = vertcat(med_men,lat_men);
+                tmp_displ_med = med_men_displ(1:end-dimMed,:); % In this scenario I have removed Load3 from {Move,Load1,Load2,Load3}.
+                tmp_displ_lat = lat_men_displ(1:end-dimLat,:);
+                displ = vertcat(tmp_displ_med,tmp_displ_lat); % Only {Move,Load1,Load2} displacements.
+                medEpiCoord = medEpiCoord(1:end-1,:);latEpiCoord = latEpiCoord(1:end-1,:); % This removes Load3 tibia data
             else
                 obj.expData = expData;
                 obj.tibiaFeatures = tibiaFeatures;
+                obj.oriCoords = vertcat(med_men,lat_men);
             end 
-            obj.oriCoords = vertcat(med_men,lat_men);
-            obj.med_men_length = size(med_men,1);
-            displ = vertcat(med_men_displ,lat_men_displ);
-            % axisSI= obj.determineSI_Dir(); % Determines the horizontal plane within the coordinates
-            % axisAP = obj.determineAP_Dir(); % This is experimental - i need to check that it works for all cases.
-            % axes = [axisSI,axisAP];
+
             %% This piece of code determines the location of the menisci points for measurements.
             tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
             tibiaData = [tibiaEpiCoords.med;tibiaEpiCoords.lat];
@@ -313,7 +320,7 @@ classdef myFunctions
             if obj.mnmx == 0 % Default case
                 newCentre(it).med = tibiaEpiCoords.med(it,:) - ScalarA*D_vec(it,:);
                 newCentre(it).lat = tibiaEpiCoords.lat(it,:) + ScalarB*D_vec(it,:); 
-                newCentre(it).med(1,AP_Dir) = tibiaEpiCoords.lat(it,AP_Dir);
+                newCentre(it).med(1,AP_Dir) = tibiaEpiCoords.lat(it,AP_Dir); % Nothing of concern here - I used epicondyle location to help define centre for measurement.
                 newCentre(it).lat(1,AP_Dir) = tibiaEpiCoords.med(it,AP_Dir) - 6; % This value here "6" is based on definitions I made in ScanIP  
             elseif obj.mnmx == 1 % Only occurs for knee 5
                 newCentre(it).med = tibiaEpiCoords.med(it,:) + ScalarB*D_vec(it,:);
@@ -333,7 +340,11 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight;% this is to correct for the issue of modelling in Abaqus
+            if obj.config =="flexed"
+                constHeight = obj.pixelConv*planeHeight(it);% This should be fine beacuse the femur is at its original position.
+            else
+                constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight;% this is to correct for the issue of modelling in Abaqus - Mainly the fact femur moved
+            end
             newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
             newCentre(it).med(1,SI_Dir) = constHeight; 
             newCentre(it).lat(1,SI_Dir) = constHeight;
@@ -346,15 +357,25 @@ classdef myFunctions
         % This function finds the deformed coordinate given coordinates from the assembly in Abaqus.  
         a = obj.med_men_length;
         med_men = obj.oriCoords(1:a,:); lat_men = obj.oriCoords(a+1:end,:); % These are the coordinates of the medial and lateral menisci
-        med_men_displ = displacements(1:a*4,:); lat_men_displ = displacements((a*4)+1:end,:); % This data is composed of 4 steps {Move,Load1, Load2 and load3} 
+        if obj.config =="flexed"
+            med_men_displ = displacements(1:a*3,:); lat_men_displ = displacements((a*3)+1:end,:); % This data is composed of 3 steps {Move,Load1, Load2} -i.e. Move = Load0
+        else
+            med_men_displ = displacements(1:a*4,:); lat_men_displ = displacements((a*4)+1:end,:);
+        end
         [b,~] = size(lat_men_displ); %[a,~] = size(med_men_displ); 
-        if obj.config == "flexed"
-            b = b/4;  ltA = [1,a+1,2*a+1]; ltB = [1,b+1,2*b+1];
+        if obj.config == "flexed"%Correction -> Tibia drive + "Move" step supression
+            b = b/3;  ltA = [1,a+1,2*a+1]; ltB = [1,b+1,2*b+1]; % I am only using Load0,Load1 and Load2.
+            if obj.tibialDrive
+                mVal = 0; lVal = 0; % THis is bcos summation of Assembly coords +  "Move" step above within MeasureMenisci function
+            else
+                mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
+            end
+            % defCoords(1).med = med_men; defCoords(1).lat = lat_men; -
+            % this is wrong i.e. sums {Assembly + Move} but displacements in Abaqus are calc with respect to assembly coords. 
         else
             b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
+            mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
         end
-        % b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
-        mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
         obj.mVal_lVal = [mVal,lVal];
         obj.avgheight = ( mVal + lVal )/2; % Average of movement in the meniscus - used to adjust the plane location.
         for it =1:obj.dim_length
@@ -367,7 +388,7 @@ classdef myFunctions
 
     function [results, obj] = EstimateMenisciDisplacements(obj,Points2Measure,displacements)
         cyl_rad =1.5; % this will be modified until suitable value is found{Verify by plotting}
-        obj.defCoords = obj.ResultantCoordinates(displacements); % These are the coordinates after displacements 
+        % obj.defCoords = obj.ResultantCoordinates(displacements); % These are the coordinates after displacements 
         ltn = ["med_men","lat_men"]; % Separates the data into lateral and medial
         nlt = ["trp(1:6,:)","trp(7:12,:)"];  % These are the points plotted around the periphery of the menisci
         for it=1:size(Points2Measure,2)
