@@ -44,13 +44,13 @@ classdef myFunctions
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 % [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
-                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_6";
+                workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_4";
                 [dat,tibiaF,obj] = obj.measureMenisci(workspacePath);
                 data.dat = dat; data.tibiaF = tibiaF;
             else
                 data = zeros(4,12);
             end
-            outputn = obj.errorfunc(data,obj.expData);
+            outputn = obj.errorfunc(data);
         end
         %% This function handles the secondary aspect of the optimisation
         function [measuredDisplacements,tibiaData,obj] = measureMenisci(obj,path)
